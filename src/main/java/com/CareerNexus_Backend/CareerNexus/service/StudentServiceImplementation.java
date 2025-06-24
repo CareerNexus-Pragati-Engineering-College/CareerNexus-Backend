@@ -1,8 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
+import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
-import com.CareerNexus_Backend.CareerNexus.service.StudentService;
+import org.springframework.security.crypto.password.PasswordEncoder; // Make sure this import exists
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +15,15 @@ import java.util.Optional;
 public class StudentServiceImplementation implements StudentService {
 
     private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public StudentServiceImplementation(StudentRepository studentRepository) {
+    //  Inject both StudentRepository and PasswordEncoder
+    public StudentServiceImplementation(StudentRepository studentRepository, PasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
+        this.passwordEncoder = passwordEncoder;
     }
+
+    // You can remove this line: private PasswordEncoder passwordEncoder; if it was duplicated
 
     @Override
     public List<Student> getAllStudents() {
@@ -31,21 +37,51 @@ public class StudentServiceImplementation implements StudentService {
 
     @Override
     public Student insertStudent(Student student) {
-        return studentRepository.save(student); // signup
+
+        //checks whether the student already or not if yes it send a exception to the user signup page
+        Optional<Student> existingStudent = studentRepository.findById(student.getS_rollNo());
+        if (existingStudent.isPresent()) {
+           // Throw the custom exception to signal the conflict
+            throw new DuplicateUserException("User with rollno '" + student.getS_rollNo() + "' already exists.");
+        }
+        try {
+            // This line the raw password is encrypted using cryptographic techniques
+            student.setS_password(passwordEncoder.encode(student.getS_password()));
+
+            return studentRepository.save(student);
+
+            // signup
+        } catch (Exception e) {
+            // Log the exception for debugging
+            System.err.println("Error inserting student: " + e.getMessage());
+            // You might want to throw a more specific custom exception here,
+            // or return null/Optional.empty() depending on your error handling strategy.
+            throw new RuntimeException("Failed to register student: " + e.getMessage(), e);
+        }
     }
 
     @Override
     @Transactional
     public Student updateStudent(Student updatedStudent) {
-        Optional<Student> existingStudent = studentRepository.findById(updatedStudent.getS_rollNo());
-        if (existingStudent.isPresent()) {
-            Student student = existingStudent.get();
-            student.setS_name(updatedStudent.getS_name());
-            student.setS_email(updatedStudent.getS_email());
-            student.setS_password(updatedStudent.getS_password());
-            return studentRepository.save(student);
-        } else {
-            return null; // or throw an exception
+        try {
+            Optional<Student> existingStudent = studentRepository.findById(updatedStudent.getS_rollNo());
+            if (existingStudent.isPresent()) {
+                Student student = existingStudent.get();
+                student.setS_name(updatedStudent.getS_name());
+                student.setS_email(updatedStudent.getS_email());
+
+                // Only re-encode password if it has changed and is not null/empty
+                if (updatedStudent.getS_password() != null && !updatedStudent.getS_password().isEmpty()) {
+                    student.setS_password(passwordEncoder.encode(updatedStudent.getS_password()));
+                }
+
+                return studentRepository.save(student);
+            } else {
+                return null; // or throw an exception indicating student not found
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating student: " + e.getMessage());
+            throw new RuntimeException("Failed to update student: " + e.getMessage(), e);
         }
     }
 }

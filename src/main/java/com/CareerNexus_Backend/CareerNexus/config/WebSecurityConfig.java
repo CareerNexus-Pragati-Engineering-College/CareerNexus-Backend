@@ -25,8 +25,7 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Autowired
-    JwtFilter jwtFilter;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,11 +45,10 @@ public class WebSecurityConfig {
                 )
                 // 4. Configure session management to be stateless (important for JWTs)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+               ;
 
         return http.build();
     }
-
     // This bean is for your controller to use to kick off the authentication process.
     // Spring Boot automatically configures it if you have a UserDetailsService and PasswordEncoder.
     @Bean
