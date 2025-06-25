@@ -3,6 +3,7 @@ package com.CareerNexus_Backend.CareerNexus.service;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder; // Make sure this import exists
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class StudentServiceImplementation implements StudentService {
         Optional<Student> existingStudent = studentRepository.findById(student.getS_rollNo());
         if (existingStudent.isPresent()) {
            // Throw the custom exception to signal the conflict
-            throw new DuplicateUserException("User with rollno '" + student.getS_rollNo() + "' already exists.");
+            throw new DuplicateUserException(HttpStatus.CONFLICT.value(), "User with rollno '" + student.getS_rollNo() + "' already exists.");
         }
         try {
             // This line the raw password is encrypted using cryptographic techniques
