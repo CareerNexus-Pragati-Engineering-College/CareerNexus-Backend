@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/auth/student")
-public class StudentAuthController {
 
+public class StudentAuthController {
+/*
     private final StudentService studentService;
 
 
@@ -48,4 +48,8 @@ public class StudentAuthController {
 //    public Student updateStudent(@RequestBody Student student) {
 //        return studentService.updateStudent(student);
 //    }
+
+ */
 }
+
+

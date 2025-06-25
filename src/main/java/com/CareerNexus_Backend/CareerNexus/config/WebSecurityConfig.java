@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.config;
 
 import com.CareerNexus_Backend.CareerNexus.security.JwtFilter;
+import io.jsonwebtoken.Jwt;
 import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,11 +26,13 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-
+    @Autowired
+    private JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring Security Filter Chain...");
+
 
 
         http
@@ -45,7 +48,8 @@ public class WebSecurityConfig {
                 )
                 // 4. Configure session management to be stateless (important for JWTs)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               ;
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        ;
 
         return http.build();
     }

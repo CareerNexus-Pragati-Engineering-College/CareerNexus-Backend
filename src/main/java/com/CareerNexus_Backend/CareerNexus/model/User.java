@@ -20,6 +20,18 @@ public class User {
     // Constructors
     public User() {}
 
+    public User(String userId, String password){
+        this.userId = userId;
+
+        this.password = password;
+    }
+
+
+    public User(String userId, String email, String password){
+        this.userId = userId;
+        this.email = email;
+        this.password = password;
+    }
     public User(String userId, String email, String password, String role) {
         this.userId = userId;
         this.email = email;
