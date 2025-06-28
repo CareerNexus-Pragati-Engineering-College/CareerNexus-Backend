@@ -2,17 +2,8 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 
-import java.util.List;
-
 public interface StudentService {
-
-
-
-    List<Student> getAllStudents();
-    Student getStudentById(String s_rollNo);
-    Student insertStudent(Student student);
-    Student updateStudent(Student student);
-
-
-
+    boolean hasProfile(String userId);
+    Student getStudentProfile(String userId);
+    Student createOrUpdateProfile(Student student);
 }

@@ -1,9 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "StudentDetails")
@@ -11,57 +11,142 @@ import jakarta.persistence.Table;
 public class Student {
 
     @Id
-    @Column(name = "s_rollNo")
-    private String s_rollNo;
+    @Column(name = "userId")
+    private String UserId;
 
-    @Column(name = "s_name")
-    private String s_name;
+    @Column(name = "password")
+    private String Password;
 
-    @Column(name = "s_email")
-    private String s_email;
+    @ElementCollection
+    @CollectionTable(name = "student_skills", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "skills")
+    private List<String> skills = new ArrayList<>();
 
-    @Column(name = "s_password")
-    private String s_password;
+    @Column(name = "email")
+    private String Email;
+
+    @Column(name = "firstName")
+    private String FirstName;
+
+    @Column(name = "lastName")
+    private String LastName;
+
+    @Column(name = "department")
+    private String Department;
+
+    @Column(name = "cgpa")
+    private float CGPA;
+
+    @Column(name = "phone")
+    private String Phone;
+
+    @Column(name = "year")
+    private String Year;
+
+
+
 
     public Student() {
     }
 
-    public Student(String s_email, String s_name, String s_password, String s_rollNo) {
-        this.s_email = s_email;
-        this.s_name = s_name;
-        this.s_password = s_password;
-        this.s_rollNo = s_rollNo;
+    public Student(float CGPA, String department, String firstName, String password,String lastName, String phone, String email, String UserId, String year, List<String> skills) {
+        this.CGPA = CGPA;
+        this.Department = department;
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Phone = phone;
+        this.Email = email;
+        this.UserId = UserId;
+        this.Year = year;
+        this.skills = skills;
+        this.Password=password;
     }
 
-    public String getS_email() {
-        return s_email;
+    public float getCGPA() {
+        return CGPA;
     }
 
-    public void setS_email(String s_email) {
-        this.s_email = s_email;
+    public void setCGPA(float CGPA) {
+        this.CGPA = CGPA;
     }
 
-    public String getS_name() {
-        return s_name;
+    public String getPassword() {
+        return Password;
     }
 
-    public void setS_name(String s_name) {
-        this.s_name = s_name;
+    public void setPassword(String password) {
+        Password = password;
     }
 
-    public String getS_password() {
-        return s_password;
+    public String getDepartment() {
+        return Department;
     }
 
-    public void setS_password(String s_password) {
-        this.s_password = s_password;
+    public void setDepartment(String department) {
+        Department = department;
     }
 
-    public String getS_rollNo() {
-        return s_rollNo;
+    public String getFirstName() {
+        return FirstName;
     }
 
-    public void setS_rollNo(String s_rollNo) {
-        this.s_rollNo = s_rollNo;
+    public void setFirstName(String firstName) {
+        FirstName = firstName;
+    }
+
+    public String getLastName() {
+        return LastName;
+    }
+
+    public void setLastName(String lastName) {
+        LastName = lastName;
+    }
+
+    public String getPhone() {
+        return Phone;
+    }
+
+    public void setPhone(String phone) {
+        Phone = phone;
+    }
+
+    public String getEmail() {
+        return Email;
+    }
+
+    public void setEmail(String email) {
+        Email = email;
+    }
+
+    public String getUserId() {
+        return UserId;
+    }
+
+    public void setUserId(String userId) {
+        this.UserId = userId;
+    }
+
+    public String getYear() {
+        return Year;
+    }
+
+    public void setYear(String year) {
+        Year = year;
+    }
+
+
+
+    public List<String> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 }
+
+
+
+
+
+
