@@ -14,8 +14,6 @@ public class Student {
     @Column(name = "userId")
     private String UserId;
 
-    @Column(name = "password")
-    private String Password;
 
     @ElementCollection
     @CollectionTable(name = "student_skills", joinColumns = @JoinColumn(name = "student_id"))
@@ -49,7 +47,7 @@ public class Student {
     public Student() {
     }
 
-    public Student(float CGPA, String department, String firstName, String password,String lastName, String phone, String email, String UserId, String year, List<String> skills) {
+    public Student(float CGPA, String department, String firstName, String lastName, String phone, String email, String UserId, String year, List<String> skills) {
         this.CGPA = CGPA;
         this.Department = department;
         this.FirstName = firstName;
@@ -59,7 +57,7 @@ public class Student {
         this.UserId = UserId;
         this.Year = year;
         this.skills = skills;
-        this.Password=password;
+
     }
 
     public float getCGPA() {
@@ -70,13 +68,7 @@ public class Student {
         this.CGPA = CGPA;
     }
 
-    public String getPassword() {
-        return Password;
-    }
 
-    public void setPassword(String password) {
-        Password = password;
-    }
 
     public String getDepartment() {
         return Department;
