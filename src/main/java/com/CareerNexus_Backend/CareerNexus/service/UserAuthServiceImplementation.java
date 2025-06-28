@@ -4,7 +4,14 @@ package com.CareerNexus_Backend.CareerNexus.service;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
+import com.CareerNexus_Backend.CareerNexus.security.JwtUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +23,12 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
 
     private final UserAuthRepository userAuthRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public UserAuthServiceImplementation(UserAuthRepository userAuthRepository, PasswordEncoder passwordEncoder){
         this.passwordEncoder=passwordEncoder;
@@ -45,11 +58,34 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
        }
    }
 
-    public User login(String userId, String password) {
-        return null;
-        /*
-        return userRepository.findByUserId(userId)
-                .filter(user -> user.getPassword().equals(password))
-                .orElseThrow(() -> new RuntimeException("Invalid user ID or password"));*/
+    public ResponseEntity<String> login(User user) {
+        try {
+            System.out.println("Authenticating user: " + user.getUserId());
+
+            // Authenticate user credentials
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUserId(), user.getPassword())
+            );
+
+            // Set the authentication in the security context
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Generate JWT token
+
+            String token = jwtUtils.getToken(user.getUserId());
+
+            // call from here the profile is available or not
+            // Return token
+            return ResponseEntity.status(200).body(token);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body("Error: " + e.getMessage());
+
+        }
+
+
     }
+
+
 }

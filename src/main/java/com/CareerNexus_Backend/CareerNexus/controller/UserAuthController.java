@@ -30,11 +30,6 @@ public class UserAuthController {
     // Use a logger instead of System.out.println
     private static final Logger logger = LoggerFactory.getLogger(UserAuthController.class);
 
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
 
     @Autowired
     private UserAuthService userAuthService;
@@ -98,27 +93,6 @@ public class UserAuthController {
     @PostMapping("/login")
 
     public ResponseEntity<String> authenticateUser(@RequestBody User user) throws AuthenticationException {
-        try {
-            System.out.println("Authenticating user: " + user.getUserId());
-
-            // Authenticate user credentials
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUserId(), user.getPassword())
-            );
-
-            // Set the authentication in the security context
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // Generate JWT token
-
-            String token = jwtUtils.getToken(user.getUserId());
-
-            // Return token
-            return ResponseEntity.ok(token);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
+      return userAuthService.login(user);
     }
 }
