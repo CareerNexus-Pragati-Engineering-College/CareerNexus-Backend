@@ -1,13 +1,18 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+
+@Entity
+@Table(name = "RecruiterDetails")
 public class Recruiter {
 
     @Id
     @Column(name = "userId")
-    private String UserId;
+    private String userId;
 
 
     @Column(name = "email")
@@ -31,11 +36,11 @@ public class Recruiter {
 
 
     public String getUserId() {
-        return UserId;
+        return userId;
     }
 
     public void setUserId(String userId) {
-        UserId = userId;
+        userId = userId;
     }
 
     public String getEmail() {

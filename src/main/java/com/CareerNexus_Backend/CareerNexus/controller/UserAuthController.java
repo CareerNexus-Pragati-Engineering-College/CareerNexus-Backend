@@ -1,26 +1,22 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
-// Removed unused import: import com.CareerNexus_Backend.CareerNexus.model.Student;
+
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
-import com.CareerNexus_Backend.CareerNexus.security.JwtUtils;
 import com.CareerNexus_Backend.CareerNexus.service.UserAuthService;
 
+import com.CareerNexus_Backend.CareerNexus.service.UserAuthServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin; // Keep if needed
-import org.slf4j.Logger; // For logging
-import org.slf4j.LoggerFactory; // For logging
-import org.springframework.security.authentication.AuthenticationManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.naming.AuthenticationException;
+import java.util.Map;
 
 
 @RestController
@@ -32,7 +28,7 @@ public class UserAuthController {
 
 
     @Autowired
-    private UserAuthService userAuthService;
+    private UserAuthServiceImplementation userAuthService;
 
     // this method mainly focus on student signup details to store in db
     @PostMapping("/student/register")
@@ -92,7 +88,7 @@ public class UserAuthController {
 
     @PostMapping("/login")
 
-    public ResponseEntity<String> authenticateUser(@RequestBody User user) throws AuthenticationException {
+    public ResponseEntity<Map<String,String>> authenticateUser(@RequestBody User user) throws AuthenticationException {
       return userAuthService.login(user);
     }
 }
