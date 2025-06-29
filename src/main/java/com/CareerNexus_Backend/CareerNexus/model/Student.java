@@ -12,7 +12,7 @@ public class Student {
 
     @Id
     @Column(name = "userId")
-    private String UserId;
+    private String userId;
 
 
     @ElementCollection
@@ -47,14 +47,14 @@ public class Student {
     public Student() {
     }
 
-    public Student(float CGPA, String department, String firstName, String lastName, String phone, String email, String UserId, String year, List<String> skills) {
+    public Student(float CGPA, String department, String firstName,String lastName, String phone, String email, String userId, String year, List<String> skills) {
         this.CGPA = CGPA;
         this.Department = department;
         this.FirstName = firstName;
         this.LastName = lastName;
         this.Phone = phone;
         this.Email = email;
-        this.UserId = UserId;
+        this.userId = userId;
         this.Year = year;
         this.skills = skills;
 
@@ -67,7 +67,6 @@ public class Student {
     public void setCGPA(float CGPA) {
         this.CGPA = CGPA;
     }
-
 
 
     public String getDepartment() {
@@ -111,11 +110,11 @@ public class Student {
     }
 
     public String getUserId() {
-        return UserId;
+        return userId;
     }
 
     public void setUserId(String userId) {
-        this.UserId = userId;
+        this.userId = userId;
     }
 
     public String getYear() {
@@ -136,9 +135,3 @@ public class Student {
         this.skills = skills;
     }
 }
-
-
-
-
-
-
