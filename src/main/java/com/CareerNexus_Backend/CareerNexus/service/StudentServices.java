@@ -22,16 +22,23 @@ public class StudentServices {
         return false;
     }
 
-    public Student createOrUpdate(Student StudentDetails, String userId) {
-
-        Optional<Student> existingStudentOpt = studentRepository.findByUserId(StudentDetails.getUserId());
-        if (existingStudentOpt.isPresent()) {
-            // Update profile fields
-            Student existingStudent = existingStudentOpt.get();
-            return studentRepository.save(existingStudent);
-        } else {
-            // New student profile creation
-            return studentRepository.save(StudentDetails);
-        }
+    public Student createOrUpdateProfile(Student student , String userId) {
+        student.setUserId(userId);
+        return studentRepository.findByUserId(student.getUserId())
+                .map(existing -> {
+                    // Update only allowed fields
+                    existing.setFirstName(student.getFirstName());
+                    existing.setLastName(student.getLastName());
+                    existing.setDepartment(student.getDepartment());
+                    existing.setYear(student.getYear());
+                    existing.setCGPA(student.getCGPA());
+                    existing.setSkills(student.getSkills());
+                    // Phone/email remain unchanged from registration
+                    return studentRepository.save(existing);
+                })
+                .orElseGet(() -> {
+                    // New profile (shouldn't happen for registered users)
+                    return studentRepository.save(student);
+                });
     }
 }

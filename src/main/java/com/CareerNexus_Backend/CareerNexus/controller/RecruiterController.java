@@ -1,10 +1,10 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
-import com.CareerNexus_Backend.CareerNexus.service.RecruiterServices;
+import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
+import com.CareerNexus_Backend.CareerNexus.service.RecruiterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,15 +12,12 @@ import java.util.Map;
 public class RecruiterController {
 
     @Autowired
-    private RecruiterServices recruiterServices;
+    private RecruiterService recruiterService;
 
-    @GetMapping("/check-profile")
-    public ResponseEntity<Map<String, String>> checkRecruiterProfile(@RequestParam String userId) {
-        boolean isComplete = recruiterServices.isProfileComplete(userId);
-        String redirectUrl = isComplete ? "/recruiter/home" : "/recruiter/profile";
+    @PostMapping("/{userId}/profile")
+    public Recruiter Profile(@RequestBody Recruiter RecruiterDetails, @PathVariable String userId) {
 
-        Map<String, String> response = new HashMap<>();
-        response.put("redirect", redirectUrl);
-        return ResponseEntity.ok(response);
+        return recruiterService.createOrUpdateProfile(RecruiterDetails, userId);
+
     }
 }
