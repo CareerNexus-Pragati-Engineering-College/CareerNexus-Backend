@@ -17,6 +17,7 @@ public class StudentController {
 
     @PostMapping("/{userId}/profile")
     public Student Profile(@RequestBody Student StudentDetails, @PathVariable String userId) {
+
        return studentServices.createOrUpdate(StudentDetails,userId);
         }
 }
