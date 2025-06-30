@@ -33,7 +33,7 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private RecruiterServices recruiterServices;
+    private RecruiterService recruiterService;
 
     @Autowired
     private StudentServices studentServices;
@@ -94,12 +94,12 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
                 return ResponseEntity.status(200).body(responseBody);
             }
             // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
-            else if (currentRole.equals("recruiter") && recruiterServices.isRecruiterAvailable(user)) {
+            else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
                 responseBody.put("router", "/profile?page=data");
                 return ResponseEntity.status(200).body(responseBody);
             }
 
-            responseBody.put("router", "/profile?page=update");
+            responseBody.put("router", "/home");
             return ResponseEntity.status(200).body(responseBody);
         }
              catch (Exception e) {
