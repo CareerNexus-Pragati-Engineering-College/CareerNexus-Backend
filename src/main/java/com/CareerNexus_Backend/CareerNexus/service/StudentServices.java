@@ -41,4 +41,9 @@ public class StudentServices {
                     return studentRepository.save(student);
                 });
     }
+
+    public Optional<Student> getProfileData(String userId) {
+
+        return studentRepository.findByUserId(userId);
+    }
 }

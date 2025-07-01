@@ -16,9 +16,13 @@ public class StudentController {
     private StudentServices studentServices;
 
     @PostMapping("/{userId}/profile")
-    public Student Profile(@RequestBody Student StudentDetails, @PathVariable String userId) {
-
+        public Student Profile(@RequestBody Student StudentDetails, @PathVariable String userId) {
        return studentServices.createOrUpdateProfile(StudentDetails,userId);
+        }
+
+        @GetMapping("/{userId}/profile")
+        public Optional<Student> Profile(@PathVariable String userId){
+        return studentServices.getProfileData(userId);
         }
 }
 
