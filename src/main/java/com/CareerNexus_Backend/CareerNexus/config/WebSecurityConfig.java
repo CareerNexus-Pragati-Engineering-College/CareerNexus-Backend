@@ -74,7 +74,9 @@ public class WebSecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Allow specified origin for development. In production, specify your frontend's URL(s).
-        config.addAllowedOrigin("http://localhost:5173"); // Your React frontend's development URL
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("http://192.168.29.195:5173");
+        // Your React frontend's development URL
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed HTTP methods
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept")); // Allowed headers

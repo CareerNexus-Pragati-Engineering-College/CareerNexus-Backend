@@ -90,7 +90,7 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
 
             // Check if the current user is a 'student' and if they are available via studentServices.
             if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
-               responseBody.put("router", "/profile?page=data");
+               responseBody.put("router", "/profile?page=data&userId="+user.getUserId()+"&email="+ userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
                 return ResponseEntity.status(200).body(responseBody);
             }
             // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.

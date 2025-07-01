@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+
+@RequestMapping("api/recruiter")
 public class RecruiterController {
 
     @Autowired
