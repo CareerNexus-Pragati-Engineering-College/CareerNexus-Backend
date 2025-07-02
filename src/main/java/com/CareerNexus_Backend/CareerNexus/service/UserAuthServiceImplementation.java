@@ -67,41 +67,62 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
     }
 
     public ResponseEntity<Map<String, String>> login(User user) {
+        Authentication authentication;
         try {
             System.out.println("Authenticating user: " + user.getUserId());
 
             // Authenticate user credentials
-            Authentication authentication = authenticationManager.authenticate(
+            authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUserId(), user.getPassword())
             );
 
-            // Set the authentication in the security context
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String currentAuthenicateUserRole = authentication.getAuthorities().toString().substring(6);
+            Map<String, String> responseBody = new HashMap<>();
 
             // Generate JWT token
 
             String token = jwtUtils.getToken(user.getUserId());
+            // this validates whether current authenicating user has the correct access to their respected role
+            if (!currentAuthenicateUserRole.equals(user.getRole() + "]")) {
 
-            String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().substring(6);
-            String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
+                if (currentAuthenicateUserRole.equals("admin]") && user.getRole().equals("tpo")) {
+                    System.out.println("admin authenticated successfully..");
+                    responseBody.put("token", token);
+                    responseBody.put("router", "/admin");
+                    responseBody.put("msg","redirecting to admin portal");
+                    return ResponseEntity.status(200).body(responseBody);
 
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("token", token);
-
-            // Check if the current user is a 'student' and if they are available via studentServices.
-            if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
-               responseBody.put("router", "/profile?page=data&userId="+user.getUserId()+"&email="+ userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-                return ResponseEntity.status(200).body(responseBody);
+                } else {
+                    Map<String, String> errorBody = new HashMap<>();
+                    errorBody.put("error", "Login Failed");
+                    errorBody.put("message", "Unauthorized Access");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(errorBody);
+                }
             }
-            // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
-            else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
-                responseBody.put("router", "/profile?page=data");
-                return ResponseEntity.status(200).body(responseBody);
-            }
+        // Set the authentication in the security context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            responseBody.put("router", "/home");
+
+        String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().substring(6);
+        String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
+
+
+        responseBody.put("token", token);
+        // Check if the current user is a 'student' and if they are available via studentServices.
+        if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
+            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
             return ResponseEntity.status(200).body(responseBody);
         }
+        // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
+        else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
+            responseBody.put("router", "/profile?page=data");
+            return ResponseEntity.status(200).body(responseBody);
+        }
+
+        responseBody.put("router", "/home");
+        return ResponseEntity.status(200).body(responseBody);
+    }
              catch (Exception e) {
                  Map<String, String> errorBody = new HashMap<>();
                  errorBody.put("error", "Login Failed");
