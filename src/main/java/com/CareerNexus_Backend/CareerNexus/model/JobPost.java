@@ -3,32 +3,80 @@ package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalTime;
+
 
 @Entity
 public class JobPost {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "job_id") // Explicitly define column name if different from field name
+    private Long id; // Unique identifier for each job post
 
+    // Many-to-One relationship to the User who posted this job.
+    // 'posted_by_user_id' will be the foreign key in the 'job_posts' table.
+ @ManyToOne(fetch = FetchType.EAGER) // Lazy fetching for performance
+    @JoinColumn(name = "posted_by_user_id", nullable = false) // Foreign key column, cannot be null
+    private User postedBy; // The User entity representing the recruiter/TPO who created this post
+
+    @Column(name = "company_name", nullable = false)
     private String companyName;
-    private String Title;
-    private String Package;
 
-    private LocalDate Deadline;
-    private LocalDate postedAt;
+    @Column(name = "job_title", nullable = false) // Renamed from 'Title' for better clarity
+    private String jobTitle;
 
-    @ElementCollection
-    private List<String> Location; // ArrayList of Indian states
+    @Column(name = "salary_package") // Renamed from 'Package' for better clarity
+    private String salaryPackage; // Store as String to allow flexibility (e.g., "5-10 LPA", "Negotiable")
 
-    @Column(length = 2000)
+    @Column(name = "application_deadline", nullable = false)
+    private LocalDate applicationDeadline;
+
+    @Column(name = "posted_at", nullable = false)
+    private LocalDate postedAt; // Date when the job was posted
+
+    // Using @ElementCollection for a list of simple types (like Strings for locations)
+    // This will create a separate join table to store the locations for each job post.
+    @ElementCollection(fetch = FetchType.LAZY) // Lazy fetch for efficiency
+    @CollectionTable(name = "job_post_locations", // Name of the join table
+            joinColumns = @JoinColumn(name = "job_post_id")) // Foreign key in join table linking back to job_posts
+    @Column(name = "location") // Column name in the 'job_post_locations' table
+    private List<String> locations; // List of locations (e.g., "Hyderabad", "Bengaluru", "Remote")
+
+    @Column(name = "job_description", length = 2000, columnDefinition = "TEXT", nullable = false)
     private String jobDescription;
 
-    @Column(length = 2000)
-    private String recruitmentProcess;
+    @Column(name = "recruitment_process", length = 2000, columnDefinition = "TEXT")
+    private String recruitmentProcess; // Details about interview rounds, etc.
 
-   private String recruiterUserId; // To link post to recruiter
+    public Long getId() {
+        return id;
+    }
+
+    public JobPost(Long id, User postedBy, String companyName, String jobTitle, String salaryPackage, LocalDate applicationDeadline,  List<String> locations, String jobDescription, String recruitmentProcess) {
+        this.id = id;
+        this.postedBy = postedBy;
+        this.companyName = companyName;
+        this.jobTitle = jobTitle;
+        this.salaryPackage = salaryPackage;
+        this.applicationDeadline = applicationDeadline;
+        this.locations = locations;
+        this.jobDescription = jobDescription;
+        this.recruitmentProcess = recruitmentProcess;
+    }
+    public JobPost(){}
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getPostedBy() {
+        return postedBy;
+    }
+
+    public void setPostedBy(User postedBy) {
+        this.postedBy = postedBy;
+    }
 
     public String getCompanyName() {
         return companyName;
@@ -38,36 +86,28 @@ public class JobPost {
         this.companyName = companyName;
     }
 
-    public LocalDate getDeadline() {
-        return Deadline;
+    public String getJobTitle() {
+        return jobTitle;
     }
 
-    public void setDeadline(LocalDate deadline) {
-        Deadline = deadline;
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
     }
 
-    public String getJobDescription() {
-        return jobDescription;
+    public String getSalaryPackage() {
+        return salaryPackage;
     }
 
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
+    public void setSalaryPackage(String salaryPackage) {
+        this.salaryPackage = salaryPackage;
     }
 
-    public List<String> getLocation() {
-        return Location;
+    public LocalDate getApplicationDeadline() {
+        return applicationDeadline;
     }
 
-    public void setLocation(List<String> location) {
-        Location = location;
-    }
-
-    public String getPackage() {
-        return Package;
-    }
-
-    public void setPackage(String aPackage) {
-        Package = aPackage;
+    public void setApplicationDeadline(LocalDate applicationDeadline) {
+        this.applicationDeadline = applicationDeadline;
     }
 
     public LocalDate getPostedAt() {
@@ -78,7 +118,21 @@ public class JobPost {
         this.postedAt = postedAt;
     }
 
+    public List<String> getLocations() {
+        return locations;
+    }
 
+    public void setLocations(List<String> locations) {
+        this.locations = locations;
+    }
+
+    public String getJobDescription() {
+        return jobDescription;
+    }
+
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
+    }
 
     public String getRecruitmentProcess() {
         return recruitmentProcess;
@@ -86,22 +140,5 @@ public class JobPost {
 
     public void setRecruitmentProcess(String recruitmentProcess) {
         this.recruitmentProcess = recruitmentProcess;
-    }
-
-    public String getTitle() {
-        return Title;
-    }
-
-    public void setTitle(String title) {
-        Title = title;
-    }
-
-
-    public String getRecruiterUserId() {
-        return recruiterUserId;
-    }
-
-    public void setRecruiterUserId(String recruiterUserId) {
-        this.recruiterUserId = recruiterUserId;
     }
 }

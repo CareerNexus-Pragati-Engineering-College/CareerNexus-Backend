@@ -90,6 +90,9 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
                     responseBody.put("token", token);
                     responseBody.put("router", "/admin");
                     responseBody.put("msg","redirecting to admin portal");
+                    responseBody.put("role","admin");
+                    // Set the authentication in the security context
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                     return ResponseEntity.status(200).body(responseBody);
 
                 } else {
@@ -116,10 +119,13 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
         }
         // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
         else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
-            responseBody.put("router", "/profile?page=data");
+            responseBody.put("msg","redirecting to profile");
+
+            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+
             return ResponseEntity.status(200).body(responseBody);
         }
-
+        responseBody.put("msg","redirecting to Home...");
         responseBody.put("router", "/home");
         return ResponseEntity.status(200).body(responseBody);
     }
