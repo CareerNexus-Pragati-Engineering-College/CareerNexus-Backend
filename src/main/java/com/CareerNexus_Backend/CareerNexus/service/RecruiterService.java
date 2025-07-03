@@ -3,6 +3,7 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
+import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,10 @@ import java.util.Optional;
                     })
                     .orElseGet(() -> recruiterRepository.save(recruiter));
         }
+
+    public Optional<Recruiter> getProfileData(String userId) {
+
+        return recruiterRepository.findByUserId(userId);
     }
+}
 
