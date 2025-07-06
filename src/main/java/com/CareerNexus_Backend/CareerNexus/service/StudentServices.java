@@ -34,6 +34,8 @@ public class StudentServices {
                     existing.setYear(student.getYear());
                     existing.setCGPA(student.getCGPA());
                     existing.setSkills(student.getSkills());
+                    existing.setUrls(student.getUrls());
+                    existing.setGraduationYear(student.getGraduationYear());
                     // Phone/email remain unchanged from registration
                     return studentRepository.save(existing);
                 })

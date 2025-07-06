@@ -2,8 +2,6 @@ package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "StudentDetails")
@@ -14,11 +12,8 @@ public class Student {
     @Column(name = "userId")
     private String userId;
 
-
-    @ElementCollection
-    @CollectionTable(name = "student_skills", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "skills")
-    private List<String> skills = new ArrayList<>();
+    private String skills ;
 
     @Column(name = "email")
     private String Email;
@@ -41,40 +36,53 @@ public class Student {
     @Column(name = "year")
     private String Year;
 
+    @Column(name = "graduation_year")
+    private String GraduationYear;
 
 
+
+    @Column(name="urls")
+    private String urls;
 
     public Student() {
     }
 
-    public Student(float CGPA, String department, String firstName,String lastName, String phone, String email, String userId, String year, List<String> skills) {
-        this.CGPA = CGPA;
-        this.Department = department;
-        this.FirstName = firstName;
-        this.LastName = lastName;
-        this.Phone = phone;
-        this.Email = email;
+    public Student(String userId, String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls) {
         this.userId = userId;
-        this.Year = year;
         this.skills = skills;
-
-    }
-
-    public float getCGPA() {
-        return CGPA;
-    }
-
-    public void setCGPA(float CGPA) {
-        this.CGPA = CGPA;
-    }
-
-
-    public String getDepartment() {
-        return Department;
-    }
-
-    public void setDepartment(String department) {
+        Email = email;
+        FirstName = firstName;
+        LastName = lastName;
         Department = department;
+        this.CGPA = CGPA;
+        Phone = phone;
+        Year = year;
+        GraduationYear = graduationYear;
+        this.urls = urls;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    public String getEmail() {
+        return Email;
+    }
+
+    public void setEmail(String email) {
+        Email = email;
     }
 
     public String getFirstName() {
@@ -93,28 +101,28 @@ public class Student {
         LastName = lastName;
     }
 
+    public String getDepartment() {
+        return Department;
+    }
+
+    public void setDepartment(String department) {
+        Department = department;
+    }
+
+    public float getCGPA() {
+        return CGPA;
+    }
+
+    public void setCGPA(float CGPA) {
+        this.CGPA = CGPA;
+    }
+
     public String getPhone() {
         return Phone;
     }
 
     public void setPhone(String phone) {
         Phone = phone;
-    }
-
-    public String getEmail() {
-        return Email;
-    }
-
-    public void setEmail(String email) {
-        Email = email;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public String getYear() {
@@ -125,13 +133,19 @@ public class Student {
         Year = year;
     }
 
-
-
-    public List<String> getSkills() {
-        return skills;
+    public String getGraduationYear() {
+        return GraduationYear;
     }
 
-    public void setSkills(List<String> skills) {
-        this.skills = skills;
+    public void setGraduationYear(String graduationYear) {
+        GraduationYear = graduationYear;
+    }
+
+    public String getUrls() {
+        return urls;
+    }
+
+    public void setUrls(String urls) {
+        this.urls = urls;
     }
 }

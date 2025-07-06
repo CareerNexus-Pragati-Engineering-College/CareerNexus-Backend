@@ -12,11 +12,13 @@ import java.util.Optional;
 @RequestMapping("api/student")
 public class StudentController {
 
+
     @Autowired
     private StudentServices studentServices;
 
     @PostMapping("/{userId}/profile")
         public Student Profile(@RequestBody Student StudentDetails, @PathVariable String userId) {
+
        return studentServices.createOrUpdateProfile(StudentDetails,userId);
         }
 
