@@ -2,9 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.model;
 
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -16,6 +14,17 @@ public class User {
     private String email;
     private String password;
     private String role;
+    // One-to-one relationship to StudentDetails (for ALL student-specific info, including names/phone)
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Student studentDetails;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Recruiter recruiterDetails;
+
+
+
+
 
     // Constructors
     public User() {}
@@ -39,7 +48,8 @@ public class User {
         this.role = role;
     }
 
-    // Getters and Setters
+
+
     public String getUserId() {
         return userId;
     }
@@ -71,4 +81,34 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public Student getStudentDetails() {
+        return studentDetails;
+    }
+
+
+
+    public Recruiter getRecruiterDetails() {
+        return recruiterDetails;
+    }
+
+
+
+    public void setStudentDetails(Student studentDetails) {
+        this.studentDetails = studentDetails;
+        if (studentDetails != null) {
+            studentDetails.setUser(this);
+        }
+    }
+
+
+
+    public void setRecruiterDetails(Recruiter recruiterDetails) {
+        this.recruiterDetails = recruiterDetails;
+        if (recruiterDetails != null) {
+            recruiterDetails.setUser(this);
+        }
+    }
+
+
 }

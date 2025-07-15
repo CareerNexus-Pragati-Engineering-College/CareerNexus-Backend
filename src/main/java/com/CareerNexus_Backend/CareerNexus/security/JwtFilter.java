@@ -30,13 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtils = jwtUtils;
         this.customUserDetailsService = customUserDetailsService;
     }
-    // Alternatively, for field injection (less recommended but works for quick fix):
-    /*
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-    */
+
 
 
     @Override
@@ -55,10 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 username = jwtUtils.extractUsername(jwt);
             } catch (Exception e) {
                 System.err.println("Error extracting username from JWT: " + e.getMessage());
-                // Optionally, clear the SecurityContext or send an error response if token is invalid
-                // SecurityContextHolder.clearContext();
-                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
-                // return; // Stop processing this filter
+
             }
         }
 
@@ -70,10 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 userDetails = this.customUserDetailsService.loadUserByUsername(username);
             } catch (UsernameNotFoundException e) {
                 System.err.println("User not found from token: " + username + " - " + e.getMessage());
-                // Optionally clear context or send error if user doesn't exist in DB
-                // SecurityContextHolder.clearContext();
-                // response.sendError(HttpServletResponse.SC_FORBIDDEN, "User from token not found");
-                // return;
+
             }
 
 

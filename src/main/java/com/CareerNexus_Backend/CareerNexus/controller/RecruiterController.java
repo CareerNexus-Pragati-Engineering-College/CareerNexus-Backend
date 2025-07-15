@@ -1,5 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
+import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.service.RecruiterService;
@@ -19,14 +20,14 @@ public class RecruiterController {
     private RecruiterService recruiterService;
 
     @PostMapping("/{userId}/profile")
-    public Recruiter Profile(@RequestBody Recruiter RecruiterDetails, @PathVariable String userId) {
+    public RecruiterDetailsDTO Profile(@RequestBody RecruiterDetailsDTO RecruiterDetails, @PathVariable String userId) throws Exception {
 
-        return recruiterService.createOrUpdateProfile(RecruiterDetails, userId);
+        return recruiterService.createOrUpdateProfile(userId,RecruiterDetails);
 
     }
 
     @GetMapping("/{userId}/profile")
-    public Optional<Recruiter> Profile(@PathVariable String userId){
+    public RecruiterDetailsDTO Profile(@PathVariable String userId) throws Exception {
         return recruiterService.getProfileData(userId);
     }
 }

@@ -12,6 +12,12 @@ public class Student {
     @Column(name = "userId")
     private String userId;
 
+    @OneToOne(fetch = FetchType.LAZY) // One-to-one relationship with User
+    @MapsId // Indicates that the PK is mapped from the User entity's PK
+    @JoinColumn(name = "user_id") // This creates the foreign key column in recruiter_details table
+    private User user; // Reference to the User entity (this is the field mappedBy="user" in User entity)
+
+
     @Column(name = "skills")
     private String skills ;
 
@@ -47,7 +53,7 @@ public class Student {
     public Student() {
     }
 
-    public Student(String userId, String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls) {
+    public Student(String userId, String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls,User user) {
         this.userId = userId;
         this.skills = skills;
         Email = email;
@@ -59,6 +65,17 @@ public class Student {
         Year = year;
         GraduationYear = graduationYear;
         this.urls = urls;
+        this.user=user;
+    }
+
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getUserId() {
