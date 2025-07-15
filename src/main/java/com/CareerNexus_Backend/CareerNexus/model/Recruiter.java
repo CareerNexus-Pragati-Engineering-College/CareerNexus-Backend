@@ -1,9 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime; // For created/updated timestamps (good practice)
 
 
@@ -12,22 +10,25 @@ import java.time.LocalDateTime; // For created/updated timestamps (good practice
 public class Recruiter {
 
     @Id
-    @Column(name = "user_id") // Best practice: use snake_case for column names
-    // If you want the userId to be generated automatically (e.g., UUID):
-    // @GeneratedValue(strategy = GenerationType.UUID) // Requires Hibernate 6+ for String UUID
+    @Column(name = "user_id")
     private String userId;
 
-    // Password field is typically needed for user authentication
-    @Column(name = "password")
-    private String password; // Corrected casing
+
+    @OneToOne(fetch = FetchType.LAZY) // One-to-one relationship with User
+    @MapsId // Indicates that the PK is mapped from the User entity's PK
+    @JoinColumn(name = "user_id") // This creates the foreign key column in recruiter_details table
+    private User user; // Reference to the User entity (this is the field mappedBy="user" in User entity)
+
+
+
 
     @Column(name = "email")
     private String email; // Corrected casing
 
-    @Column(name = "first_name") // Corrected casing, snake_case recommended
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name") // Corrected casing, snake_case recommended
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(name = "company")
@@ -49,9 +50,9 @@ public class Recruiter {
     public Recruiter(){}
 
     // Constructor with all fields
-    public Recruiter(String userId, String password, String email, String firstName, String lastName, String company, String designation, String phone) {
+    public Recruiter(String userId,  String email, String firstName, String lastName, String company, String designation, String phone,User user) {
         this.userId = userId;
-        this.password = password; // Added password to constructor
+
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -59,12 +60,10 @@ public class Recruiter {
         this.designation = designation;
         this.phone = phone;
         this.createdAt = LocalDateTime.now(); // Set creation time
-
+        this.user=user;
     }
 
-    // --- CRITICAL FIX HERE ---
-    // The previous setUserId was `userId = userId;` which assigns the parameter to itself,
-    // not to the class field. It should be `this.userId = userId;`.
+
     public String getUserId() {
         return userId;
     }
@@ -73,13 +72,13 @@ public class Recruiter {
         this.userId = userId; // FIXED: Use 'this' to refer to the class field
     }
 
-    // Getters and setters for password (add if not present)
-    public String getPassword() {
-        return password;
+
+    public User getUser() {
+        return user;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getEmail() {
