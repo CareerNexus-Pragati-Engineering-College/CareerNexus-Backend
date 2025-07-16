@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.Student;
+import com.CareerNexus_Backend.CareerNexus.model.User;
 
 
 public class StudentDetailsDTO {
@@ -20,8 +21,10 @@ public class StudentDetailsDTO {
     public StudentDetailsDTO() {}
 
 
+
     public StudentDetailsDTO(Student studentDetails) {
         if (studentDetails != null) {
+            System.out.println("hello guysss");
             this.userId = studentDetails.getUserId();
             this.firstName = studentDetails.getFirstName();
             this.lastName = studentDetails.getLastName();

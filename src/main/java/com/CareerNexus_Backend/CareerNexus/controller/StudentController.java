@@ -2,6 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.service.StudentServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,10 @@ public class StudentController {
     @PostMapping("/{userId}/profile")
         public ResponseEntity<StudentDetailsDTO> Profile(@RequestBody StudentDetailsDTO studentDetailsDTO, @PathVariable String userId) {
         try {
+
             StudentDetailsDTO createdOrUpdatedProfile = studentServices.createOrUpdateProfile(studentDetailsDTO,userId);
             return new ResponseEntity<>(createdOrUpdatedProfile, HttpStatus.CREATED); // Or HttpStatus.OK if it's an update
+
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

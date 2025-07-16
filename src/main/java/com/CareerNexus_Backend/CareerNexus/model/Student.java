@@ -1,6 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -18,43 +21,48 @@ public class Student {
     private User user; // Reference to the User entity (this is the field mappedBy="user" in User entity)
 
 
-    @Column(name = "skills")
+    @Column(name = "skills", nullable = false)
     private String skills ;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String Email;
 
-    @Column(name = "firstName")
+    @Column(name = "firstName", nullable = false)
     private String FirstName;
 
-    @Column(name = "lastName")
+    @Column(name = "lastName", nullable = false)
     private String LastName;
 
-    @Column(name = "department")
+    @Column(name = "department", nullable = false)
     private String Department;
 
-    @Column(name = "cgpa")
+    @Column(name = "cgpa", nullable = false)
     private float CGPA;
 
-    @Column(name = "phone")
+    @Column(name = "phone", nullable = false)
     private String Phone;
 
-    @Column(name = "year")
+    @Column(name = "year", nullable = false)
     private String Year;
 
-    @Column(name = "graduation_year")
+    @Column(name = "graduation_year", nullable = false)
     private String GraduationYear;
 
-
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(name="urls")
     private String urls;
 
+    @Version
+    private Long version;
+
     public Student() {
     }
 
-    public Student(String userId, String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls,User user) {
-        this.userId = userId;
+    public Student(String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls,User user) {
+        this.userId = user.getUserId();
         this.skills = skills;
         Email = email;
         FirstName = firstName;
@@ -67,7 +75,6 @@ public class Student {
         this.urls = urls;
         this.user=user;
     }
-
 
 
     public User getUser() {

@@ -21,13 +21,13 @@ public class UserDTO {
             this.userId = user.getUserId();
             this.email = user.getEmail();
             this.role = user.getRole();
-            if ("Student".equalsIgnoreCase(user.getRole())) {
+            if ("student".equalsIgnoreCase(user.getRole())) {
                 Student studentDetails = user.getStudentDetails();
                 if (studentDetails != null) {
                     this.firstName = studentDetails.getFirstName();
                     this.lastName = studentDetails.getLastName();
                 }
-            } else if ("Recruiter".equalsIgnoreCase(user.getRole())) {
+            } else if ("recruiter".equalsIgnoreCase(user.getRole())) {
                 Recruiter recruiterDetails = user.getRecruiterDetails();
                 if (recruiterDetails != null) {
                     this.firstName = recruiterDetails.getFirstName();
