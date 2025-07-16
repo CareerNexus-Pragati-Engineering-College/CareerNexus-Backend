@@ -2,6 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter; // Corrected import
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.User;
@@ -30,18 +31,20 @@ public class RecruiterService {
         return false;
     }
 
-    @Transactional
-    public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO) throws Exception {
-        // 1. Fetch the User to link the profile to
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+    @Transactional // Ensure this method runs in a single transaction
+    public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO)  {
 
-        // 2. Check if a profile already exists for this user (for update scenario)
-        Optional<Recruiter> existingProfile = recruiterDetailsRepository.findById(userId); // PK of RecruiterDetails is userId
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         Recruiter recruiterDetails;
-        if (existingProfile.isPresent()) {
-            recruiterDetails = existingProfile.get();
+
+
+        if (user.getRecruiterDetails() != null) {
+
+            recruiterDetails = user.getRecruiterDetails();
+
             recruiterDetails.setFirstName(recruiterDetailsDTO.getFirstName());
             recruiterDetails.setLastName(recruiterDetailsDTO.getLastName());
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
@@ -51,20 +54,23 @@ public class RecruiterService {
         } else {
 
             recruiterDetails = new Recruiter(
-                   recruiterDetailsDTO.getUserId(),
+                    user,
                     recruiterDetailsDTO.getEmail(),
                     recruiterDetailsDTO.getFirstName(),
                     recruiterDetailsDTO.getLastName(),
                     recruiterDetailsDTO.getCompany(),
                     recruiterDetailsDTO.getDesignation(),
-                    recruiterDetailsDTO.getPhone(),
-                    user
+                    recruiterDetailsDTO.getPhone()
             );
-            user.setRecruiterDetails(recruiterDetails); // Also set the bidirectional relationship from User side
+
+            user.setRecruiterDetails(recruiterDetails);
         }
 
-        // 3. Save the profile and convert to DTO for return
-        return new RecruiterDetailsDTO(recruiterDetailsRepository.save(recruiterDetails));
+
+
+
+
+        return new RecruiterDetailsDTO( recruiterDetailsRepository.save(recruiterDetails));
     }
 
     @Transactional(readOnly = true) // Read-only transaction for fetching data

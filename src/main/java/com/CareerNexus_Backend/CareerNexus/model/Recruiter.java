@@ -1,157 +1,87 @@
+// src/main/java/com/CareerNexus_Backend/CareerNexus/model/RecruiterDetails.java
 package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime; // For created/updated timestamps (good practice)
-
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "RecruiterDetails") // Ensure your DB table is named RecruiterDetails
+@Table(name = "recruiter_details")
 public class Recruiter {
 
     @Id
     @Column(name = "user_id")
     private String userId;
 
-
-    @OneToOne(fetch = FetchType.LAZY) // One-to-one relationship with User
-    @MapsId // Indicates that the PK is mapped from the User entity's PK
-    @JoinColumn(name = "user_id") // This creates the foreign key column in recruiter_details table
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId // Indicates that the PK (userId) is mapped from the User entity's PK
+    @JoinColumn(name = "user_id") // This explicitly defines the foreign key column in recruiter_details table
     private User user; // Reference to the User entity (this is the field mappedBy="user" in User entity)
 
+    @Column(name = "email", nullable = false)
+    private String email;
 
-
-
-    @Column(name = "email")
-    private String email; // Corrected casing
-
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "company")
-    private String company; // Corrected casing
+    @Column(name = "company", nullable = false)
+    private String company;
 
-    @Column(name = "designation")
-    private String designation; // Already correct casing, good!
+    @Column(name = "designation", nullable = false)
+    private String designation;
 
     @Column(name = "phone")
-    private String phone; // Corrected casing
+    private String phone;
 
-    // Optional: Timestamps for auditing
-    @Column(name = "created_at")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Version
+    private Long version;
 
 
+    public Recruiter() {
 
-    public Recruiter(){}
+    }
 
-    // Constructor with all fields
-    public Recruiter(String userId,  String email, String firstName, String lastName, String company, String designation, String phone,User user) {
-        this.userId = userId;
 
+    public Recruiter(User user, String email, String firstName, String lastName,
+                            String company, String designation, String phone) {
+        this.user = user;
+        this.userId = user.getUserId();
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.company = company;
         this.designation = designation;
         this.phone = phone;
-        this.createdAt = LocalDateTime.now(); // Set creation time
-        this.user=user;
+
     }
 
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId; // FIXED: Use 'this' to refer to the class field
-    }
-
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getEmail() {
-        return email; // Corrected casing
-    }
-
-    public void setEmail(String email) {
-        this.email = email; // Corrected casing
-    }
-
-    public String getFirstName() {
-        return firstName; // Corrected casing
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName; // Corrected casing
-    }
-
-    public String getLastName() {
-        return lastName; // Corrected casing
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName; // Corrected casing
-    }
-
-    public String getCompany() {
-        return company; // Corrected casing
-    }
-
-    public void setCompany(String company) {
-        this.company = company; // Corrected casing
-    }
-
-    public String getDesignation() {
-        return designation;
-    }
-
-    public void setDesignation(String designation) {
-        this.designation = designation;
-    }
-
-    public String getPhone() {
-        return phone; // Corrected casing
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone; // Corrected casing
-    }
-
-    // Getters and setters for timestamps
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-
-
-    @Override
-    public String toString() {
-        return "Recruiter{" +
-                "userId='" + userId + '\'' +
-                ", email='" + email + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", company='" + company + '\'' +
-                ", designation='" + designation + '\'' +
-                ", phone='" + phone + '\'' +
-                ", createdAt=" + createdAt +
-
-                '}';
-    }
+    // Getters and Setters for all fields
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; } // Be cautious: With @MapsId, this is typically managed by Hibernate/User
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
+    public String getDesignation() { return designation; }
+    public void setDesignation(String designation) { this.designation = designation; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; } // Typically not set manually
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; } // Typically not set manually
 }

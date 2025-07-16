@@ -5,6 +5,7 @@ import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import com.CareerNexus_Backend.CareerNexus.security.JwtUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,8 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
         }
     }
 
+
+    @Transactional()
     public ResponseEntity<Map<String, String>> login(User user) {
         Authentication authentication;
         try {

@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.User;
@@ -31,15 +32,15 @@ public class StudentServices {
 
     @Transactional
     public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO , String userId) throws Exception {
+
         User user = userAuthRepository.findById(userId)
-                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
 
-        Optional<Student> existingProfile = studentRepository.findById(userId); // PK of StudentDetails is userId
 
         Student studentDetails;
-        if (existingProfile.isPresent()) {
-            studentDetails = existingProfile.get();
+        if (user.getStudentDetails()!=null) {
+            studentDetails = user.getStudentDetails();
 
             studentDetails.setFirstName(studentDetailsDTO.getFirstName());
             studentDetails.setLastName(studentDetailsDTO.getLastName());
@@ -50,10 +51,10 @@ public class StudentServices {
             studentDetails.setGraduationYear(studentDetailsDTO.getGraduationYear());
             studentDetails.setSkills(studentDetailsDTO.getSkills());
            studentDetails.setEmail(studentDetailsDTO.getEmail());
-        } else {
+        }
+        else {
 
             studentDetails = new Student(
-                    studentDetailsDTO.getUserId(),
                     studentDetailsDTO.getSkills(),
                     studentDetailsDTO.getEmail(),
                     studentDetailsDTO.getFirstName(),
@@ -66,6 +67,7 @@ public class StudentServices {
                     studentDetailsDTO.getUrls(),
                     user
                     );
+
 
             user.setStudentDetails(studentDetails);
         }
