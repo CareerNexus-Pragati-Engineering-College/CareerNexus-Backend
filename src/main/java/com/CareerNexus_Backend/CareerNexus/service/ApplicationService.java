@@ -72,7 +72,7 @@ public class ApplicationService {
                 String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
                 Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
                 Files.copy(resumeFile.getInputStream(), filePath);
-                resumeUrl = "/" + uniqueFileName; // Store a relative URL or full URL if served from different path
+                resumeUrl = "/" + uniqueFileName;
             } catch (IOException e) {
 
                 throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
