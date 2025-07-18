@@ -43,7 +43,8 @@ public class WebSecurityConfig {
                 // 3. Configure authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/ws/editor/**").permitAll()// Allow unauthenticated access to /auth/** endpoints
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/ws/editor/**").permitAll()
                         .anyRequest().authenticated() // All other requests require authentication
                 )
                 // 4. Configure session management to be stateless (important for JWTs)

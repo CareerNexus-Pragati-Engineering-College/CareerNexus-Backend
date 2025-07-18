@@ -2,7 +2,9 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
+import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +51,10 @@ public class JobPostService {
     }
 
     @Transactional(readOnly = true)
-    public List<JobPostDTO> getAllJobs() {
-        List<JobPost> jobs = jobPostRepository.findAll();
+    public List<JobPostDTO> getAllJobs(String userId) {
+        User user = userAuthRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        List<JobPost> jobs = jobPostRepository.findNotAppliedJobsByStudent(user);
         return jobs.stream()
                 .map(this::convertEntityToDto)
                 .collect(Collectors.toList());
