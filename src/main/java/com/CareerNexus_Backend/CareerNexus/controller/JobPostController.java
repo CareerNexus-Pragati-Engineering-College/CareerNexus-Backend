@@ -50,9 +50,9 @@ public class JobPostController {
     }
 
 
-    @GetMapping("/all")
-    public ResponseEntity<List<JobPostDTO>> getAllJobs() {
-        List<JobPostDTO> jobs = jobPostService.getAllJobs();
+    @GetMapping("/{userId}/all")
+    public ResponseEntity<List<JobPostDTO>> getAllJobs(@PathVariable String userId) {
+        List<JobPostDTO> jobs = jobPostService.getAllJobs(userId);
         return ResponseEntity.ok(jobs);
     }
 
