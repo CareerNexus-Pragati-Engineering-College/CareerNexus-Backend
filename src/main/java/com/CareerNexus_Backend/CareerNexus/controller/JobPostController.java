@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
 import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 
 import com.CareerNexus_Backend.CareerNexus.service.JobPostService;
 
@@ -93,4 +94,6 @@ public class JobPostController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 }

@@ -2,6 +2,8 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,25 @@ public class ApplicationController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    @GetMapping("/counts/per-job/by-recruiter/{recruiterId}")
+    public ResponseEntity<List<JobApplicationCountDTO>> getApplicationCountsPerJobForRecruiter(@PathVariable String recruiterId) {
+        try {
+            List<JobApplicationCountDTO> counts = applicationService.getApplicationCountsPerJobForRecruiter(recruiterId);
+            return ResponseEntity.ok(counts);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
 /*
     @GetMapping("/job/{recruiterId}")
     public ResponseEntity<List<ApplicationDTO>> getApplicationsForRecruiterId(@PathVariable String recruiterId){

@@ -39,6 +39,9 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
     @Autowired
     private StudentServices studentServices;
 
+    @Autowired
+    private TpoService tpoService;
+
     public UserAuthServiceImplementation(UserAuthRepository userAuthRepository, PasswordEncoder passwordEncoder){
         this.passwordEncoder=passwordEncoder;
         this.userAuthRepository=userAuthRepository;
@@ -128,6 +131,15 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
 
             return ResponseEntity.status(200).body(responseBody);
         }
+
+        else if (currentRole.equals("tpo") && tpoService.isTpoAvailable(user)) {
+            responseBody.put("msg","redirecting to profile");
+
+            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+
+            return ResponseEntity.status(200).body(responseBody);
+        }
+
         responseBody.put("msg","redirecting to Home...");
         responseBody.put("router", "/home");
         return ResponseEntity.status(200).body(responseBody);
