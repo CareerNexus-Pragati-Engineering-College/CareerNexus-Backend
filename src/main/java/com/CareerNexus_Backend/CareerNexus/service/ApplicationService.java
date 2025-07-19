@@ -1,6 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Application;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
 import com.CareerNexus_Backend.CareerNexus.model.User;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -112,6 +115,19 @@ public class ApplicationService {
                 .map(ApplicationDTO::new)
                 .collect(Collectors.toList());
     }
+
+
+    // it shows the total student applied for each individual job posted by specific recruiter
+    @Transactional()
+    public List<JobApplicationCountDTO> getApplicationCountsPerJobForRecruiter(String recruiterId) {
+        User recruiter = userAuthRepository.findById(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Recruiter user not found with ID: " + recruiterId));
+        if (!"recruiter".equalsIgnoreCase(recruiter.getRole()) && !"tpo".equalsIgnoreCase(recruiter.getRole())) {
+            throw new IllegalArgumentException("User ID " + recruiterId + " does not belong to a recruiter or TPO.");
+        }
+        return applicationRepository.countApplicationsWithDetailsPerJobForRecruiter(recruiter);
+    }
+
 /*
     @Transactional()
     public List<ApplicationDTO> getApplicationsForRecruiterId(String recruiterId) {
