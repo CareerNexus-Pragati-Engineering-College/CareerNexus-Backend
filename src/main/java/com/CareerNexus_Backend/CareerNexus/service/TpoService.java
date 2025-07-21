@@ -1,18 +1,23 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.Temp;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import com.CareerNexus_Backend.CareerNexus.model.User;
+import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.TpoRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TpoService {
@@ -30,6 +35,9 @@ public class TpoService {
         }
         return false;
     }
+
+    @Autowired
+    private StudentRepository studentRepository;
 
 
     @Transactional // Ensure this method runs in a single transaction
@@ -72,5 +80,10 @@ public class TpoService {
         TPO tpoDetails = tpoRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recruiter Profile not found for User ID: " + userId));
         return new TpoDetailsDTO(tpoDetails);
+    }
+
+ @Transactional()
+    public List<Temp> getProfileLinks(String year, String department) {
+        return studentRepository.findStudentsByYearAndDepartment(year,department);
     }
 }
