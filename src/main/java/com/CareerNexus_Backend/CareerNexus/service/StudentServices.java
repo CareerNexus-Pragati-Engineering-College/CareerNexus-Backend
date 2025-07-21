@@ -11,7 +11,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentServices {
@@ -22,24 +24,23 @@ public class StudentServices {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    public boolean isStudentAvailable(User user){
-        Optional<Student> isData=studentRepository.findByUserId(user.getUserId());
-        if(isData.isEmpty()){
+    public boolean isStudentAvailable(User user) {
+        Optional<Student> isData = studentRepository.findByUserId(user.getUserId());
+        if (isData.isEmpty()) {
             return true;
         }
         return false;
     }
 
     @Transactional
-    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO , String userId) throws Exception {
+    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO, String userId) throws Exception {
 
         User user = userAuthRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
 
-
         Student studentDetails;
-        if (user.getStudentDetails()!=null) {
+        if (user.getStudentDetails() != null) {
             studentDetails = user.getStudentDetails();
 
             studentDetails.setFirstName(studentDetailsDTO.getFirstName());
@@ -50,9 +51,8 @@ public class StudentServices {
             studentDetails.setYear(studentDetailsDTO.getYear());
             studentDetails.setGraduationYear(studentDetailsDTO.getGraduationYear());
             studentDetails.setSkills(studentDetailsDTO.getSkills());
-           studentDetails.setEmail(studentDetailsDTO.getEmail());
-        }
-        else {
+            studentDetails.setEmail(studentDetailsDTO.getEmail());
+        } else {
 
             studentDetails = new Student(
                     studentDetailsDTO.getSkills(),
@@ -66,7 +66,7 @@ public class StudentServices {
                     studentDetailsDTO.getGraduationYear(),
                     studentDetailsDTO.getUrls(),
                     user
-                    );
+            );
 
 
             user.setStudentDetails(studentDetails);
@@ -83,4 +83,6 @@ public class StudentServices {
                 .orElseThrow(() -> new Exception("Student Profile not found for User ID: " + userId));
         return new StudentDetailsDTO(studentDetails);
     }
+
+
 }

@@ -1,11 +1,15 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
 
+import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.Temp;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 
 import com.CareerNexus_Backend.CareerNexus.service.TpoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/tpo")
@@ -24,5 +28,10 @@ public class TpoController {
     @GetMapping("/{userId}/profile")
     public TpoDetailsDTO Profile(@PathVariable String userId) throws Exception {
         return tpoService.getProfileData(userId);
+    }
+
+    @GetMapping("student/get-profile-links/{year}/{department}")
+    public List<Temp> getProfileLinks(@PathVariable String year, String department){
+        return tpoService.getProfileLinks(year,department);
     }
 }

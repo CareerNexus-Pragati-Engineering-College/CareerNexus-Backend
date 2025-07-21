@@ -22,9 +22,11 @@ public class StudentDetailsDTO {
 
 
 
+
+
     public StudentDetailsDTO(Student studentDetails) {
         if (studentDetails != null) {
-            System.out.println("hello guysss");
+
             this.userId = studentDetails.getUserId();
             this.firstName = studentDetails.getFirstName();
             this.lastName = studentDetails.getLastName();
@@ -39,6 +41,14 @@ public class StudentDetailsDTO {
         }
     }
 
+    public StudentDetailsDTO(String userId, String firstName, String lastName, String urls){
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.urls = urls;
+        // Other fields will remain null/default if not passed to this constructor
+    }
+
 
     public String getUserId() {
         return userId;
@@ -47,6 +57,7 @@ public class StudentDetailsDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
 
     public String getFirstName() {
         return firstName;
