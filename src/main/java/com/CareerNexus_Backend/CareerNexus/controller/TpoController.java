@@ -2,7 +2,6 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
-import com.CareerNexus_Backend.CareerNexus.dto.Temp;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 
 import com.CareerNexus_Backend.CareerNexus.service.TpoService;
@@ -31,7 +30,8 @@ public class TpoController {
     }
 
     @GetMapping("student/get-profile-links/{year}/{department}")
-    public List<Temp> getProfileLinks(@PathVariable String year, String department){
+    public List<StudentDetailsDTO> getProfileLinks(@PathVariable String year, @PathVariable String department){
+        System.out.println(year+" "+department);
         return tpoService.getProfileLinks(year,department);
     }
 }

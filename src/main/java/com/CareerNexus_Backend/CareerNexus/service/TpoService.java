@@ -1,11 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
-import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
-import com.CareerNexus_Backend.CareerNexus.dto.Temp;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
-import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
@@ -17,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TpoService {
@@ -83,7 +79,7 @@ public class TpoService {
     }
 
  @Transactional()
-    public List<Temp> getProfileLinks(String year, String department) {
+    public List<StudentDetailsDTO> getProfileLinks(String year, String department) {
         return studentRepository.findStudentsByYearAndDepartment(year,department);
     }
 }
