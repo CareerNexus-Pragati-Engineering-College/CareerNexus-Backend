@@ -46,7 +46,7 @@ public class StudentDetailsDTO {
         this.firstName = firstName;
         this.lastName = lastName;
         this.urls = urls;
-        // Other fields will remain null/default if not passed to this constructor
+
     }
 
 
