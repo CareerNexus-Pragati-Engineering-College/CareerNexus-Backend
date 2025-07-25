@@ -1,0 +1,85 @@
+package com.CareerNexus_Backend.CareerNexus.service;
+
+import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
+import com.CareerNexus_Backend.CareerNexus.model.TPO;
+import com.CareerNexus_Backend.CareerNexus.model.User;
+import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
+import com.CareerNexus_Backend.CareerNexus.repository.TpoRepository;
+import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class TpoService {
+
+    @Autowired
+    private TpoRepository tpoRepository;
+
+    @Autowired
+    private UserAuthRepository userRepository; // To fetch the User entity to link with
+
+    public boolean isTpoAvailable(User user) {
+        Optional<TPO> isData = tpoRepository.findByUserId(user.getUserId());
+        if (isData.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+
+    @Transactional // Ensure this method runs in a single transaction
+    public TpoDetailsDTO createOrUpdateProfile(String userId, TpoDetailsDTO tpoDetailsDTO) {
+
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        TPO tpoDetails;
+
+
+        if (user.getTpoDetails() != null) {
+
+            tpoDetails = user.getTpoDetails();
+
+            tpoDetails.setFirstName(tpoDetailsDTO.getFirstName());
+            tpoDetails.setLastName(tpoDetailsDTO.getLastName());
+            tpoDetails.setPhone(tpoDetailsDTO.getPhone());
+
+        } else {
+
+            tpoDetails = new TPO(
+                    user,
+                    tpoDetailsDTO.getEmail(),
+                    tpoDetailsDTO.getFirstName(),
+                    tpoDetailsDTO.getLastName(),
+
+                    tpoDetailsDTO.getPhone()
+            );
+
+            user.setTpoDetails(tpoDetails);
+        }
+
+        return new TpoDetailsDTO(tpoRepository.save(tpoDetails));
+    }
+
+    @Transactional(readOnly = true)
+    public TpoDetailsDTO getProfileData(String userId) {
+        TPO tpoDetails = tpoRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Recruiter Profile not found for User ID: " + userId));
+        return new TpoDetailsDTO(tpoDetails);
+    }
+
+ @Transactional()
+    public List<StudentDetailsDTO> getProfileLinks(String year, String department) {
+        return studentRepository.findStudentsByYearAndDepartment(year,department);
+    }
+}
