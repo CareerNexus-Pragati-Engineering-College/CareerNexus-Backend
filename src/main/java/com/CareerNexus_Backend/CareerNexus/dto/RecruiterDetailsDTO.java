@@ -1,8 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
-import com.CareerNexus_Backend.CareerNexus.model.Student;
-
 import java.time.LocalDateTime;
 
 
@@ -34,7 +32,7 @@ public class RecruiterDetailsDTO {
         }
     }
 
-    // --- Getters and Setters --- (Generate all getters and setters for fields above)
+
     public String getUserId() {
         return userId;
     }

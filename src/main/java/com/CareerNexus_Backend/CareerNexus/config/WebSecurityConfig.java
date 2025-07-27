@@ -84,6 +84,7 @@ public class WebSecurityConfig {
         config.setAllowCredentials(true); // Allow sending of cookies/authentication headers
         config.setMaxAge(3600L); // How long the pre-flight request can be cached (in seconds)
 
+
         // Apply this CORS configuration to all paths
         source.registerCorsConfiguration("/**", config);
         return source;

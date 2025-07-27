@@ -1,8 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
-import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
@@ -11,9 +12,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentServices {
@@ -24,7 +23,7 @@ public class StudentServices {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    public boolean isStudentAvailable(User user) {
+    public boolean isStudentAvailable(UsersDTO user) {
         Optional<Student> isData = studentRepository.findByUserId(user.getUserId());
         if (isData.isEmpty()) {
             return true;
@@ -39,10 +38,12 @@ public class StudentServices {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
 
-        Student studentDetails;
-        if (user.getStudentDetails() != null) {
-            studentDetails = user.getStudentDetails();
+        Optional<Student> studentDetail=this.getProfileForStudent(userId);
 
+        Student studentDetails;
+        if (studentDetail.isPresent()) {
+            studentDetails = studentDetail.get();
+            studentDetails.setUser(user);
             studentDetails.setFirstName(studentDetailsDTO.getFirstName());
             studentDetails.setLastName(studentDetailsDTO.getLastName());
             studentDetails.setPhone(studentDetailsDTO.getPhone());
@@ -52,8 +53,9 @@ public class StudentServices {
             studentDetails.setGraduationYear(studentDetailsDTO.getGraduationYear());
             studentDetails.setSkills(studentDetailsDTO.getSkills());
             studentDetails.setEmail(studentDetailsDTO.getEmail());
-        } else {
 
+        } else {
+System.out.println("welcome");
             studentDetails = new Student(
                     studentDetailsDTO.getSkills(),
                     studentDetailsDTO.getEmail(),
@@ -69,7 +71,7 @@ public class StudentServices {
             );
 
 
-            user.setStudentDetails(studentDetails);
+
         }
 
 
@@ -84,5 +86,18 @@ public class StudentServices {
         return new StudentDetailsDTO(studentDetails);
     }
 
+    @Transactional()
+    public Optional<Student> getProfileForStudent(String userId) {
+
+        return studentRepository.findById(userId);
+
+    }
+
+    @Transactional()
+    public UserDTO getStudentProfileAsUserDTO(String userId) {
+        Student studentDetails = studentRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for User ID: " + userId));
+        return new UserDTO(studentDetails);
+    }
 
 }

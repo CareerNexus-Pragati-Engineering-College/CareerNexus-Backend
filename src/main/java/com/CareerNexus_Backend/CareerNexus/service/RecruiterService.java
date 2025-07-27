@@ -2,9 +2,10 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 
+import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter; // Corrected import
-import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository; // Assuming this is your repo name
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository; // Assuming you use UserRepository for User entity
@@ -18,12 +19,12 @@ import java.util.Optional;
 public class RecruiterService {
 
     @Autowired
-    private RecruiterRepository recruiterDetailsRepository; // Autowire the correct repository
+    private RecruiterRepository recruiterDetailsRepository;
 
     @Autowired
-    private UserAuthRepository userRepository; // To fetch the User entity to link with
+    private UserAuthRepository userRepository;
 
-    public boolean isRecruiterAvailable(User user){
+    public boolean isRecruiterAvailable(UsersDTO user){
         Optional<Recruiter> isData=recruiterDetailsRepository.findByUserId(user.getUserId());
         if(isData.isEmpty()){
             return true;
@@ -31,20 +32,17 @@ public class RecruiterService {
         return false;
     }
 
-    @Transactional // Ensure this method runs in a single transaction
+    @Transactional
     public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO)  {
-
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
+        Optional<Recruiter> recruiterDetail=this.getProfileForRecruiter(userId);
+
         Recruiter recruiterDetails;
 
-
-        if (user.getRecruiterDetails() != null) {
-
-            recruiterDetails = user.getRecruiterDetails();
-
+        if (recruiterDetail.isPresent()) {
+            recruiterDetails = recruiterDetail.get();
             recruiterDetails.setFirstName(recruiterDetailsDTO.getFirstName());
             recruiterDetails.setLastName(recruiterDetailsDTO.getLastName());
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
@@ -63,12 +61,8 @@ public class RecruiterService {
                     recruiterDetailsDTO.getPhone()
             );
 
-            user.setRecruiterDetails(recruiterDetails);
+
         }
-
-
-
-
 
         return new RecruiterDetailsDTO( recruiterDetailsRepository.save(recruiterDetails));
     }
@@ -78,5 +72,19 @@ public class RecruiterService {
         Recruiter recruiterDetails = recruiterDetailsRepository.findById(userId)
                 .orElseThrow(() -> new Exception("Recruiter Profile not found for User ID: " + userId));
         return new RecruiterDetailsDTO(recruiterDetails);
+    }
+
+    @jakarta.transaction.Transactional()
+    public Optional<Recruiter> getProfileForRecruiter(String userId) {
+
+        return recruiterDetailsRepository.findById(userId);
+
+    }
+
+    @jakarta.transaction.Transactional()
+    public UserDTO getStudentProfileAsUserDTO(String userId) {
+        Recruiter recruiterDetails = recruiterDetailsRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for User ID: " + userId));
+        return new UserDTO(recruiterDetails);
     }
 }
