@@ -1,10 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.Student;
-import com.CareerNexus_Backend.CareerNexus.model.User;
-import org.springframework.stereotype.Component;
 
-@Component
+
 public class StudentDetailsDTO {
 
     private String userId;
@@ -47,7 +45,6 @@ public class StudentDetailsDTO {
 
     }
 
-
     public String getUserId() {
         return userId;
     }
@@ -55,7 +52,6 @@ public class StudentDetailsDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-
 
     public String getFirstName() {
         return firstName;

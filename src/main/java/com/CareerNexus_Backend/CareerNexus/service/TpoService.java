@@ -4,7 +4,6 @@ import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
-import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;

@@ -59,23 +59,75 @@ public class AssessmentRound {
         this.answerPdfUrl = answerPdfUrl;
     }
 
+    public Long getId() {
+        return id;
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public User getCreatedBy() { return createdBy; }
-    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
-    public JobPost getJobPost() { return jobPost; } // New Getter
-    public void setJobPost(JobPost jobPost) { this.jobPost = jobPost; } // New Setter
-    public String getRoundName() { return roundName; }
-    public void setRoundName(String roundName) { this.roundName = roundName; }
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-    public String getQuestionPdfUrl() { return questionPdfUrl; }
-    public void setQuestionPdfUrl(String questionPdfUrl) { this.questionPdfUrl = questionPdfUrl; }
-    public String getAnswerPdfUrl() { return answerPdfUrl; }
-    public void setAnswerPdfUrl(String answerPdfUrl) { this.answerPdfUrl = answerPdfUrl; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public JobPost getJobPost() {
+        return jobPost;
+    }
+
+    public void setJobPost(JobPost jobPost) {
+        this.jobPost = jobPost;
+    }
+
+    public String getRoundName() {
+        return roundName;
+    }
+
+    public void setRoundName(String roundName) {
+        this.roundName = roundName;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getQuestionPdfUrl() {
+        return questionPdfUrl;
+    }
+
+    public void setQuestionPdfUrl(String questionPdfUrl) {
+        this.questionPdfUrl = questionPdfUrl;
+    }
+
+    public String getAnswerPdfUrl() {
+        return answerPdfUrl;
+    }
+
+    public void setAnswerPdfUrl(String answerPdfUrl) {
+        this.answerPdfUrl = answerPdfUrl;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

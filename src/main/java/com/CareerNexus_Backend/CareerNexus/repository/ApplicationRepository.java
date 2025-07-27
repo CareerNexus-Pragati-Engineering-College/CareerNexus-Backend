@@ -7,7 +7,6 @@ import com.CareerNexus_Backend.CareerNexus.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -19,13 +18,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByJobPost_Id(Long jobId);
 
-    //List<Application> findByRecruiter_UserId(String recruiterId);
-    //@Query("SELECT COUNT(a) FROM Application a JOIN a.jobPost jp WHERE jp.postedBy.userId = :recruiterId")
-    //Long countApplicationsForRecruiterJobs(@Param("recruiterId") Long recruiterId);
 
     @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO(jp.id, jp.jobTitle, jp.companyName, COUNT(a)) " +
             "FROM Application a JOIN a.jobPost jp " +
-            "WHERE jp.postedBy = :recruiter " + // <--- **CHANGED: Directly compare the User object**
+            "WHERE jp.postedBy = :recruiter " +
             "GROUP BY jp.id, jp.jobTitle, jp.companyName")
     List<JobApplicationCountDTO> countApplicationsWithDetailsPerJobForRecruiter(@Param("recruiter") User recruiter); // <--- **CHANGED: Parameter type is User**
 

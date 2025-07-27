@@ -20,7 +20,6 @@ public class ExamController {
 
     @PostMapping("/recruiter/mcq/assessment")
     public AssessmentRound AssessmentConfiguration(@RequestPart("roundDetails") AssessmentRoundDto assessmentRoundDto,@RequestPart("questionPdf") MultipartFile questionPdf,@RequestPart("answerPdf") MultipartFile answerPdf){
-        System.out.println(assessmentRoundDto.getJobPostId());
         return  assessmentService.AssessmentConfiguration(assessmentRoundDto,questionPdf,answerPdf);
     }
 

@@ -4,7 +4,6 @@ import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import com.CareerNexus_Backend.CareerNexus.model.User;
-import com.CareerNexus_Backend.CareerNexus.service.StudentServices;
 
 public class UserDTO {
     private String userId;
@@ -63,40 +62,6 @@ public class UserDTO {
             }
         }
     }
-
-    // Constructor to convert from User entity to UserDTO
-    /*
-    public UserDTO(User user) {
-        if (user != null) {
-            this.userId = user.getUserId();
-            this.email = user.getEmail();
-            this.role = user.getRole();
-            if ("student".equalsIgnoreCase(user.getRole())) {
-                Student student= new StudentServices().getProfileForStudent(user.getUserId()).get();
-                this.firstName=student.getFirstName();
-                this.lastName=student.getLastName();
-            } else if ("recruiter".equalsIgnoreCase(user.getRole())) {
-                Recruiter recruiterDetails = user.getRecruiterDetails();
-                if (recruiterDetails != null) {
-                    this.firstName = recruiterDetails.getFirstName();
-                    this.lastName = recruiterDetails.getLastName();
-                }
-            }
-        }
-    }*/
-
-//    public UserDTO(Student studentDetails) {
-//        if (studentDetails != null) {
-//            this.userId = studentDetails.getUserId();
-//            this.firstName = studentDetails.getFirstName();
-//            this.lastName = studentDetails.getLastName();
-//            if (studentDetails.getUser() != null) {
-//                this.email = studentDetails.getUser().getEmail();
-//                this.role = studentDetails.getUser().getRole();
-//            }
-//        }
-//    }
-//
 
     public String getUserId() {
         return userId;
