@@ -33,7 +33,7 @@ public class JobApplicationCountDTO {
         this.jobDescription = jobDescription;
     }
 
-    // --- Getters and Setters ---
+
     public Long getJobId() {
         return jobId;
     }

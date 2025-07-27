@@ -1,7 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.Student;
-import com.CareerNexus_Backend.CareerNexus.model.User;
 
 
 public class StudentDetailsDTO {
@@ -19,9 +18,6 @@ public class StudentDetailsDTO {
     private String urls;
 
     public StudentDetailsDTO() {}
-
-
-
 
 
     public StudentDetailsDTO(Student studentDetails) {
@@ -49,7 +45,6 @@ public class StudentDetailsDTO {
 
     }
 
-
     public String getUserId() {
         return userId;
     }
@@ -57,7 +52,6 @@ public class StudentDetailsDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-
 
     public String getFirstName() {
         return firstName;

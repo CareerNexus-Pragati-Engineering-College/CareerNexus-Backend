@@ -3,7 +3,6 @@ package com.CareerNexus_Backend.CareerNexus.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
 
 
 @Entity
@@ -57,6 +56,7 @@ public class JobPost {
         this.recruitmentProcess = recruitmentProcess;
     }
     public JobPost(){}
+
     public void setId(Long id) {
         this.id = id;
     }
