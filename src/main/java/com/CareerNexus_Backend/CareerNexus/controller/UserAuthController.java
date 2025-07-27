@@ -1,6 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
 
+import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.service.UserAuthService;
@@ -88,7 +90,7 @@ public class UserAuthController {
 
     @PostMapping("/login")
 
-    public ResponseEntity<Map<String,String>> authenticateUser(@RequestBody User user) throws AuthenticationException {
+    public ResponseEntity<Map<String,String>> authenticateUser(@RequestBody UsersDTO user) throws AuthenticationException {
       return userAuthService.login(user);
     }
 }

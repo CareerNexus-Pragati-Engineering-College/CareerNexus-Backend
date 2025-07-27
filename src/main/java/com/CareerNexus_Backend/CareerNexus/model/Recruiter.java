@@ -81,7 +81,6 @@ public class Recruiter {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; } // Typically not set manually
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; } // Typically not set manually
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
 }

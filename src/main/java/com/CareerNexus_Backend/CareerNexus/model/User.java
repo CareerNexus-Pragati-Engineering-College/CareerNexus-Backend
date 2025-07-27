@@ -17,14 +17,9 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Student studentDetails;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Recruiter recruiterDetails;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private TPO tpoDetails;
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private TPO tpoDetails;
 
     // Constructors, Getters, and Setters
     public User() {}
@@ -45,14 +40,10 @@ public class User {
     public void setPassword(String password) { this.password = password; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-    public Student getStudentDetails() { return studentDetails; }
-    public void setStudentDetails(Student studentDetails) { this.studentDetails = studentDetails; }
-    public Recruiter getRecruiterDetails() { return recruiterDetails; }
-    public void setRecruiterDetails(Recruiter recruiterDetails) { this.recruiterDetails = recruiterDetails; }
-    public TPO getTpoDetails(){
-        return tpoDetails;
-    }
-    public void setTpoDetails(TPO tpoDetails){
-        this.tpoDetails=tpoDetails;
-    }
+//    public TPO getTpoDetails(){
+//        return tpoDetails;
+//    }
+//    public void setTpoDetails(TPO tpoDetails){
+//        this.tpoDetails=tpoDetails;
+//    }
 }

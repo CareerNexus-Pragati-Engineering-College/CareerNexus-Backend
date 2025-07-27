@@ -2,7 +2,9 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
+import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
@@ -24,7 +26,7 @@ public class TpoService {
     @Autowired
     private UserAuthRepository userRepository; // To fetch the User entity to link with
 
-    public boolean isTpoAvailable(User user) {
+    public boolean isTpoAvailable(UsersDTO user) {
         Optional<TPO> isData = tpoRepository.findByUserId(user.getUserId());
         if (isData.isEmpty()) {
             return true;
@@ -43,13 +45,14 @@ public class TpoService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
+        Optional<TPO> tpoDetail=this.getProfileForRecruiter(userId);
+
         TPO tpoDetails;
 
 
-        if (user.getTpoDetails() != null) {
+        if (tpoDetail.isPresent()) {
 
-            tpoDetails = user.getTpoDetails();
-
+            tpoDetails = tpoDetail.get();
             tpoDetails.setFirstName(tpoDetailsDTO.getFirstName());
             tpoDetails.setLastName(tpoDetailsDTO.getLastName());
             tpoDetails.setPhone(tpoDetailsDTO.getPhone());
@@ -64,8 +67,6 @@ public class TpoService {
 
                     tpoDetailsDTO.getPhone()
             );
-
-            user.setTpoDetails(tpoDetails);
         }
 
         return new TpoDetailsDTO(tpoRepository.save(tpoDetails));
@@ -81,5 +82,13 @@ public class TpoService {
  @Transactional()
     public List<StudentDetailsDTO> getProfileLinks(String year, String department) {
         return studentRepository.findStudentsByYearAndDepartment(year,department);
+    }
+
+
+    @Transactional()
+    public Optional<TPO> getProfileForRecruiter(String userId) {
+
+        return tpoRepository.findById(userId);
+
     }
 }
