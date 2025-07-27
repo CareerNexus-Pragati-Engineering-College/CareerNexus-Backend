@@ -4,8 +4,10 @@ import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
+import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
+import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,17 +27,19 @@ public class JobPostService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
+    @Autowired
+    private RecruiterRepository recruiterRepository;
+
 
     @Transactional
     public JobPostDTO createJobPost(JobPostDTO jobPostDTO, String  userId) {
 
-
+        User user = userAuthRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         JobPost jobPost = convertDtoToEntity(jobPostDTO);
 
-        jobPost.setPostedBy(userAuthRepository.findByUserId(userId).get());
+        jobPost.setPostedBy(user);
         jobPost.setPostedAt(LocalDate.now());
-
-
         JobPost savedJobPost = jobPostRepository.save(jobPost);
 
 
@@ -42,9 +47,12 @@ public class JobPostService {
     }
 
     @Transactional(readOnly = true) // Read-only transaction
-    public List<JobPostDTO> getAllJobsByRecruiter(String recruiterUserId) { // recruiterUserId is Long
+    public List<JobPostDTO> getAllJobsByRecruiter(String recruiterUserId) {
+        User user = userAuthRepository.findById(recruiterUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " +recruiterUserId));
 
-        List<JobPost> jobs = jobPostRepository.findByPostedBy(userAuthRepository.findByUserId(recruiterUserId).get());
+
+        List<JobPost> jobs = jobPostRepository.findByPostedBy(user);
         return jobs.stream()
                 .map(this::convertEntityToDto)
                 .collect(Collectors.toList());
@@ -61,14 +69,14 @@ public class JobPostService {
     }
 
     @Transactional(readOnly = true)
-    public JobPostDTO getJobPostById(Long jobId) throws Exception { // Changed parameter name to jobId for consistency
+    public JobPostDTO getJobPostById(Long jobId) throws Exception {
         JobPost jobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new Exception("Job Post not found with ID: " + jobId));
         return convertEntityToDto(jobPost);
     }
 
     @Transactional // Add transactional for write operations
-    public JobPostDTO updateJobPost(Long jobId, JobPostDTO updatedJobPostDTO, String recruiterId) throws Exception { // Accepts DTO and recruiterId
+    public JobPostDTO updateJobPost(Long jobId, JobPostDTO updatedJobPostDTO, String recruiterId) throws Exception {
         JobPost existingJobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new Exception("Job Post not found with ID: " + jobId));
 
@@ -107,6 +115,9 @@ public class JobPostService {
     }
 
     private JobPostDTO convertEntityToDto(JobPost entity) {
+
+        String userId=entity.getPostedBy().getUserId();
+        Optional<Recruiter> recruiterDetails= recruiterRepository.findByUserId(userId);
         JobPostDTO dto = new JobPostDTO();
         dto.setId(entity.getId());
         dto.setCompanyName(entity.getCompanyName());
@@ -117,13 +128,8 @@ public class JobPostService {
         dto.setJobDescription(entity.getJobDescription());
         dto.setRecruitmentProcess(entity.getRecruitmentProcess());
         dto.setPostedAt(entity.getPostedAt());
+        dto.setRecruiterDetails(new RecruiterDetailsDTO(recruiterDetails.get()));
 
-        // Assuming you want the recruiter's name in the DTO for display
-        if (entity.getPostedBy() != null) {
-
-            dto.setRecruiterDetails(new RecruiterDetailsDTO(entity.getPostedBy().getRecruiterDetails()));
-
-        }
         return dto;
     }
 }

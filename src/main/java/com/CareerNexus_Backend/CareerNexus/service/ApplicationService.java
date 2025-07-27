@@ -81,7 +81,7 @@ public class ApplicationService {
                 throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
             }
         } else {
-            throw new IllegalArgumentException("Resume file is required for application."); // Or make it optional based on your needs
+            throw new IllegalArgumentException("Resume file is required for application.");
         }
 
 

@@ -1,6 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 
+import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
@@ -72,7 +74,7 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
 
 
     @Transactional()
-    public ResponseEntity<Map<String, String>> login(User user) {
+    public ResponseEntity<Map<String, String>> login(UsersDTO user) {
         Authentication authentication;
         try {
             System.out.println("Authenticating user: " + user.getUserId());
