@@ -19,9 +19,7 @@ public class TpoController {
 
     @PostMapping("/{userId}/profile")
     public TpoDetailsDTO Profile(@RequestBody TpoDetailsDTO TpoDetails, @PathVariable String userId) throws Exception {
-
         return tpoService.createOrUpdateProfile(userId, TpoDetails);
-
     }
 
     @GetMapping("/{userId}/profile")
@@ -31,7 +29,6 @@ public class TpoController {
 
     @GetMapping("student/get-profile-links/{year}/{department}")
     public List<StudentDetailsDTO> getProfileLinks(@PathVariable String year, @PathVariable String department){
-        System.out.println(year+" "+department);
         return tpoService.getProfileLinks(year,department);
     }
 }

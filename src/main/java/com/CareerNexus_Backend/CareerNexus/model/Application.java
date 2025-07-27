@@ -59,7 +59,6 @@ public class Application {
         this.status = "PENDING";
     }
 
-
     public Long getId() {
         return id;
     }
