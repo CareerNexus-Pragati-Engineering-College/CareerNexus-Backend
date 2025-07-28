@@ -61,6 +61,7 @@ public class JobPost {
         this.recruitmentProcess = recruitmentProcess;
     }
     public JobPost(){}
+
     public void setId(Long id) {
         this.id = id;
     }

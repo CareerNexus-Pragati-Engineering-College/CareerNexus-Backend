@@ -2,7 +2,6 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
-import com.CareerNexus_Backend.CareerNexus.model.Student;
 import com.CareerNexus_Backend.CareerNexus.service.StudentServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,20 +22,16 @@ public class StudentController {
     @PostMapping("/{userId}/profile")
         public ResponseEntity<StudentDetailsDTO> Profile(@RequestBody StudentDetailsDTO studentDetailsDTO, @PathVariable String userId) {
         try {
-
             StudentDetailsDTO createdOrUpdatedProfile = studentServices.createOrUpdateProfile(studentDetailsDTO,userId);
-            return new ResponseEntity<>(createdOrUpdatedProfile, HttpStatus.CREATED); // Or HttpStatus.OK if it's an update
-
+            return new ResponseEntity<>(createdOrUpdatedProfile, HttpStatus.CREATED);
         } catch (Exception e) {
-
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        }
+    }
 
         @GetMapping("/{userId}/profile")
         public ResponseEntity<StudentDetailsDTO> getStudentProfile (@PathVariable String userId)
         {
-
             try {
                 StudentDetailsDTO profileData = studentServices.getProfileData(userId);
                 return ResponseEntity.ok(profileData);

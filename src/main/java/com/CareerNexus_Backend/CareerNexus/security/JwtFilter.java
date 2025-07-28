@@ -1,13 +1,11 @@
 package com.CareerNexus_Backend.CareerNexus.security;
 
 import com.CareerNexus_Backend.CareerNexus.service.CustomUserDetailsService;
-// Correct IOException import for java.io.IOException
-import java.io.IOException; // Corrected import
+import java.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired; // <--- ADD THIS IMPORT
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,12 +18,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    // --- FIX IS HERE: Use constructor injection (recommended) or @Autowired ---
+
     private final JwtUtils jwtUtils; // Make them final if using constructor injection
     private final CustomUserDetailsService customUserDetailsService;
 
-    // Constructor Injection: Spring will automatically provide these beans
-    @Autowired // This annotation is optional for constructor injection if there's only one constructor in Spring 4.3+
+
     public JwtFilter(JwtUtils jwtUtils, CustomUserDetailsService customUserDetailsService) {
         this.jwtUtils = jwtUtils;
         this.customUserDetailsService = customUserDetailsService;

@@ -1,7 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
 
-import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
@@ -111,45 +110,45 @@ public class UserAuthServiceImplementation  implements  UserAuthService{
                             .body(errorBody);
                 }
             }
-        // Set the authentication in the security context
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Set the authentication in the security context
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
 
-        String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().substring(6);
-        String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
+            String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().substring(6);
+            String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
 
 
-        responseBody.put("token", token);
-        // Check if the current user is a 'student' and if they are available via studentServices.
-        if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
-            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+            responseBody.put("token", token);
+            // Check if the current user is a 'student' and if they are available via studentServices.
+            if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+                return ResponseEntity.status(200).body(responseBody);
+            }
+            // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
+            else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
+                responseBody.put("msg","redirecting to profile");
+
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+
+                return ResponseEntity.status(200).body(responseBody);
+            }
+
+            else if (currentRole.equals("tpo") && tpoService.isTpoAvailable(user)) {
+                responseBody.put("msg","redirecting to profile");
+
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+
+                return ResponseEntity.status(200).body(responseBody);
+            }
+
+            responseBody.put("msg","redirecting to Home...");
+            responseBody.put("router", "/home");
             return ResponseEntity.status(200).body(responseBody);
         }
-        // Else, check if the current user is a 'recruiter' and if they are available via recruiterProfileService.
-        else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
-            responseBody.put("msg","redirecting to profile");
-
-            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-
-            return ResponseEntity.status(200).body(responseBody);
-        }
-
-        else if (currentRole.equals("tpo") && tpoService.isTpoAvailable(user)) {
-            responseBody.put("msg","redirecting to profile");
-
-            responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-
-            return ResponseEntity.status(200).body(responseBody);
-        }
-
-        responseBody.put("msg","redirecting to Home...");
-        responseBody.put("router", "/home");
-        return ResponseEntity.status(200).body(responseBody);
-    }
-             catch (Exception e) {
-                 Map<String, String> errorBody = new HashMap<>();
-                 errorBody.put("error", "Login Failed");
-                 errorBody.put("message", e.getMessage());
+        catch (Exception e) {
+            Map<String, String> errorBody = new HashMap<>();
+            errorBody.put("error", "Login Failed");
+            errorBody.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorBody);
 

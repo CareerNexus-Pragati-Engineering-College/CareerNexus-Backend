@@ -1,10 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
-import java.util.List;
 
 
 
@@ -24,7 +21,7 @@ public class JobPostDTO {
 
     private RecruiterDetailsDTO recruiterDetailsDTO;
 
-    // Default constructor
+
     public JobPostDTO() {}
 
     // Constructor to convert from JobPost entity to JobPostDTO
