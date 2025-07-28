@@ -19,6 +19,8 @@ public class JobPostDTO {
     private String jobDescription;
     private String recruitmentProcess;
     private LocalDate postedAt;
+    private String name;
+    private String userId;
 
     private RecruiterDetailsDTO recruiterDetailsDTO;
 
@@ -42,6 +44,16 @@ public class JobPostDTO {
                 this.postedBy = new UserDTO(jobPost.getPostedBy());
             }
         }
+    }
+
+    public JobPostDTO(Long job_id,LocalDate applicationDeadline,String companyName,String jobTitle,String userId,String firstName,String lastName,LocalDate postedAt){
+        this.id=job_id;
+        this.applicationDeadline=applicationDeadline;
+        this.companyName=companyName;
+        this.jobTitle=jobTitle;
+        this.userId=userId;
+        this.name=firstName+" "+lastName;
+        this.postedAt=postedAt;
     }
 
 
@@ -129,4 +141,29 @@ public class JobPostDTO {
         this.recruiterDetailsDTO=recruiterDetailsDTO;
 
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public RecruiterDetailsDTO getRecruiterDetailsDTO() {
+        return recruiterDetailsDTO;
+    }
+
+    public void setRecruiterDetailsDTO(RecruiterDetailsDTO recruiterDetailsDTO) {
+        this.recruiterDetailsDTO = recruiterDetailsDTO;
+    }
+
 }

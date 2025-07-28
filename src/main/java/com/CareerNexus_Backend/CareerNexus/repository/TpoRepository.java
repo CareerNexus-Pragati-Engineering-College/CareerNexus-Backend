@@ -2,6 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.repository;
 
 import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -9,4 +10,5 @@ import java.util.Optional;
 
 public interface TpoRepository  extends JpaRepository<TPO, String> {
     Optional<TPO> findByUserId(String UserId);
+
 }

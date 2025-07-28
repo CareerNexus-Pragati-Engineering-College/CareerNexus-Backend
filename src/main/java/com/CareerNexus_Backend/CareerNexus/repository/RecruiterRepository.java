@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface RecruiterRepository extends JpaRepository<Recruiter, String> {
     Optional<Recruiter> findByUserId(String UserId);
+
+
 }

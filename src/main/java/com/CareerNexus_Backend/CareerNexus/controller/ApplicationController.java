@@ -3,6 +3,7 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,17 @@ public class ApplicationController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    @GetMapping("/student/applications/{id}")
+    public List<StudentsApplicationsDTO> getStudentApplicationsForJobId(@PathVariable  Long id){
+        return applicationService.getStudentApplicationsForJobId(id);
+    }
+
+//    @GetMapping("/getCount/{id}")
+//    public JobApplicationCountDTO getCountById(@PathVariable Long id){
+//        return applicationService.getCountById(id);
+//    }
 
 
 

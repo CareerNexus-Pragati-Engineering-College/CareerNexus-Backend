@@ -1,7 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
-import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
-import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.*;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
@@ -14,8 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -129,7 +127,32 @@ public class JobPostService {
         dto.setRecruitmentProcess(entity.getRecruitmentProcess());
         dto.setPostedAt(entity.getPostedAt());
         dto.setRecruiterDetails(new RecruiterDetailsDTO(recruiterDetails.get()));
-
         return dto;
+    }
+
+    public List<RecruiterJobsDTO> getAll(){
+        List<JobPostDTO> allFlatJobs = jobPostRepository.findAllJobs();
+
+
+        Map<String, List<JobPostDTO>> jobsGroupedByRecruiterId = allFlatJobs.stream()
+                .collect(Collectors.groupingBy(JobPostDTO::getUserId));
+
+
+        List<RecruiterJobsDTO> recruiterJobsList = new ArrayList<>();
+        for (Map.Entry<String, List<JobPostDTO>> entry : jobsGroupedByRecruiterId.entrySet()) {
+            String recruiterUserId = entry.getKey();
+            List<JobPostDTO> jobsForThisRecruiter = entry.getValue();
+            String recruiterName = jobsForThisRecruiter.isEmpty() ? null : jobsForThisRecruiter.get(0).getName() ;
+            String companyName=jobsForThisRecruiter.get(0).getCompanyName();
+            RecruiterJobsDTO recruiterJobsDTO = new RecruiterJobsDTO(
+                    recruiterUserId,
+                    recruiterName,
+                    jobsForThisRecruiter,
+                    companyName
+            );
+            recruiterJobsList.add(recruiterJobsDTO);
+        }
+
+        return recruiterJobsList;
     }
 }
