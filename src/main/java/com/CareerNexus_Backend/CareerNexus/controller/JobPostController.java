@@ -80,5 +80,10 @@ public class JobPostController {
         }
     }
 
+    @GetMapping("/recruiters/job")
+    public List<RecruiterJobsDTO> getAll(){
+        return  jobPostService.getAll();
+    }
+
 
 }
