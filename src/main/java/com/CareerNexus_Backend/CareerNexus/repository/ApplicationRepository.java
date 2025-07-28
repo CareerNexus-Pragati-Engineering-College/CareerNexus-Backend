@@ -2,6 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.repository;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
 import com.CareerNexus_Backend.CareerNexus.model.Application;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,6 +27,25 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<JobApplicationCountDTO> countApplicationsWithDetailsPerJobForRecruiter(@Param("recruiter") User recruiter); // <--- **CHANGED: Parameter type is User**
 
 
+    @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO(jp.id, COUNT(a)) " +
+            "FROM Application a JOIN a.jobPost jp " +
+            "WHERE jp.id = :jobId "+
+            "GROUP BY jp.id"
+            )
+    JobApplicationCountDTO countApplicationByJobId(@Param("jobId")Long jobId);
+
+    @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO(" +
+            "jp.id, " +
+            "s_user.userId,  sd.FirstName, sd.LastName, sd.Email,sd.Department,sd.Year, " +
+            "app.id, app.applicationDate, app.status,sd.urls, app.appliedResumeUrl)" +
+            "FROM Application app " +
+            "JOIN app.jobPost jp " +
+            "JOIN app.student s_user " +
+            "LEFT JOIN Student sd ON sd.userId = s_user.userId "+
+            "WHERE jp.id = :Id"
+
+    )
+    List<StudentsApplicationsDTO> findAllStudentsApplications(@Param("Id") Long id);
 
 
 }

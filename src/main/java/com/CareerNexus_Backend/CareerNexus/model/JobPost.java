@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
 
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -43,6 +44,10 @@ public class JobPost {
     public Long getId() {
         return id;
     }
+
+
+
+
 
     public JobPost(Long id, User postedBy, String companyName, String jobTitle, String salaryPackage, LocalDate applicationDeadline, String locations, String jobDescription, String recruitmentProcess) {
         this.id = id;
@@ -132,4 +137,6 @@ public class JobPost {
     public void setRecruitmentProcess(String recruitmentProcess) {
         this.recruitmentProcess = recruitmentProcess;
     }
+
+
 }
