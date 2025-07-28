@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,12 +82,7 @@ public class ApplicationService {
         } else {
             throw new IllegalArgumentException("Resume file is required for application.");
         }
-
-
-        // 5. Create new Application
         Application application = new Application(jobPost, student, resumeUrl);
-
-
         return new ApplicationDTO(applicationRepository.save(application));
     }
 
@@ -128,8 +121,7 @@ public class ApplicationService {
         }
         return applicationRepository.countApplicationsWithDetailsPerJobForRecruiter(recruiter);
     }
-
-    public JobApplicationCountDTO getCountById(Long id){
+ public JobApplicationCountDTO getCountById(Long id){
         return applicationRepository.countApplicationByJobId(id);
     }
 
@@ -137,14 +129,5 @@ public class ApplicationService {
         return applicationRepository.findAllStudentsApplications(id);
     }
 
-/*
-    @Transactional()
-    public List<ApplicationDTO> getApplicationsForRecruiterId(String recruiterId) {
-        List<Application> applications = applicationRepository.findByRecruiter_UserId(recruiterId);
-        return applications.stream()
-                .map(ApplicationDTO::new)
-                .collect(Collectors.toList());
-    }
-    */
 
 }

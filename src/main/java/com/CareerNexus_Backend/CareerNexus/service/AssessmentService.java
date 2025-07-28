@@ -25,8 +25,6 @@ public class AssessmentService {
     @Autowired
     private uploadHandler uploadFileHandler;
 
-    private AssessmentRound assessmentRound;
-
     @Autowired
     private AssessmentRepository assessmentRepository;
 
@@ -44,10 +42,7 @@ public class AssessmentService {
         if(questionPdfUrl==null || answerPdfUrl==null){
             return null;
         }
-
-        assessmentRound=new AssessmentRound(user,jobPost, assessmentRoundDto.getRoundName(),assessmentRoundDto.getStartTime(),assessmentRoundDto.getEndTime(),questionPdfUrl,answerPdfUrl);
-
-
+        AssessmentRound assessmentRound = new AssessmentRound(user, jobPost, assessmentRoundDto.getRoundName(), assessmentRoundDto.getStartTime(), assessmentRoundDto.getEndTime(), questionPdfUrl, answerPdfUrl);
         return assessmentRepository.save(assessmentRound);
     }
 }

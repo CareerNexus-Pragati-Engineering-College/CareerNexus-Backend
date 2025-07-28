@@ -9,17 +9,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cglib.core.internal.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 
 @Service
 public class JwtUtils {
-    @Value("${application.security.jwt.secret-key}") //server secret key for generating the jwt token
+    @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
-    @Value("${application.security.jwt.expiration}") // Token expiration time in milliseconds
+    @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
     private String buildToken(

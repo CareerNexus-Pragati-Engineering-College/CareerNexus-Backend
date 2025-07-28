@@ -1,8 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
-import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
-import com.CareerNexus_Backend.CareerNexus.model.TPO;
 
+import com.CareerNexus_Backend.CareerNexus.model.TPO;
 import java.time.LocalDateTime;
 
 public class TpoDetailsDTO {
