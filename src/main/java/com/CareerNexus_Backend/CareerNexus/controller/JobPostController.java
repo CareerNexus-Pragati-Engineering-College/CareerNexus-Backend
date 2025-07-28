@@ -3,6 +3,9 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 
+import com.CareerNexus_Backend.CareerNexus.dto.RecruiterJobsDTO;
+
+
 import com.CareerNexus_Backend.CareerNexus.service.JobPostService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +29,6 @@ public class JobPostController {
     @PostMapping("/post/{userId}")
     public ResponseEntity<JobPostDTO> postJob(@RequestBody JobPostDTO jobPostDTO, @PathVariable String userId) {
         try {
-
-
             jobPostDTO.setPostedAt(LocalDate.now());
             JobPostDTO createdJob = jobPostService.createJobPost(jobPostDTO,userId);
             return new ResponseEntity<>(createdJob, HttpStatus.CREATED);
@@ -93,6 +94,11 @@ public class JobPostController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/recruiters/job")
+    public List<RecruiterJobsDTO> getAll(){
+        return  jobPostService.getAll();
     }
 
 

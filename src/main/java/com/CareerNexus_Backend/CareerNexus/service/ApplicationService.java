@@ -2,6 +2,7 @@ package com.CareerNexus_Backend.CareerNexus.service;
 
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Application;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
@@ -126,6 +127,14 @@ public class ApplicationService {
             throw new IllegalArgumentException("User ID " + recruiterId + " does not belong to a recruiter or TPO.");
         }
         return applicationRepository.countApplicationsWithDetailsPerJobForRecruiter(recruiter);
+    }
+
+    public JobApplicationCountDTO getCountById(Long id){
+        return applicationRepository.countApplicationByJobId(id);
+    }
+
+    public List<StudentsApplicationsDTO> getStudentApplicationsForJobId(Long id) {
+        return applicationRepository.findAllStudentsApplications(id);
     }
 
 /*

@@ -90,4 +90,5 @@ public class RecruiterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for User ID: " + userId));
         return new UserDTO(recruiterDetails);
     }
+
 }

@@ -15,6 +15,11 @@ public class JobApplicationCountDTO {
         this.jobDescription=jobDescription;
     }
 
+    public JobApplicationCountDTO(Long jobId,Long applicationCount){
+        this.applicationCount=applicationCount;
+        this.jobId=jobId;
+    }
+
 
     public JobApplicationCountDTO() {
     }
