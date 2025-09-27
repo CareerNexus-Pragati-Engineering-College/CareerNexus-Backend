@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,7 @@ public class ApplicationService {
                 }
                 String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
                 Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
-                Files.copy(resumeFile.getInputStream(), filePath);
+                Files.copy(resumeFile.getInputStream(),filePath);
                 resumeUrl = "/" + uniqueFileName;
             } catch (IOException e) {
 

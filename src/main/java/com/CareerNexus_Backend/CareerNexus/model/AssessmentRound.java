@@ -1,7 +1,10 @@
 package com.CareerNexus_Backend.CareerNexus.model;
 
+
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Entity
 @Table(name = "assessment_rounds")
@@ -12,11 +15,9 @@ public class AssessmentRound {
     @Column(name = "round_id")
     private Long id;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_post_id")
@@ -25,78 +26,55 @@ public class AssessmentRound {
     @Column(name = "round_name", nullable = false)
     private String roundName;
 
+    @Column(name="min_marks",nullable = false)
+    private  int min_marks;
+
+
+    @Column(columnDefinition = "TEXT")
+    private String encryptedQuestions;
+
+    @Column(columnDefinition = "TEXT")
+    private String encryptedAnswers;
+
+
+
+    @Column(length = 1024) // A long column to store the Base64 encoded key
+    private String encryptionKey;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
-    @Column(name = "question_pdf_url", columnDefinition = "TEXT", nullable = false)
-    private String questionPdfUrl;
-
-    @Column(name = "answer_pdf_url", columnDefinition = "TEXT")
-    private String answerPdfUrl;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
 
 
     public AssessmentRound() {
         this.createdAt = LocalDateTime.now();
     }
 
+    public AssessmentRound( User createdBy, JobPost jobPost, String roundName, int min_marks, String encryptedQuestions,String encryptedAnswers, String encryptionKey, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime createdAt) {
 
-    public AssessmentRound(User createdBy, JobPost jobPost, String roundName, LocalDateTime startTime, LocalDateTime endTime,
-                           String questionPdfUrl, String answerPdfUrl) {
-        this();
         this.createdBy = createdBy;
         this.jobPost = jobPost;
         this.roundName = roundName;
+        this.min_marks = min_marks;
+        this.encryptedQuestions = encryptedQuestions;
+        this.encryptedAnswers=encryptedAnswers;
+        this.encryptionKey = encryptionKey;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.questionPdfUrl = questionPdfUrl;
-        this.answerPdfUrl = answerPdfUrl;
+        this.createdAt = createdAt;
     }
 
-    public Long getId() {
-        return id;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public JobPost getJobPost() {
-        return jobPost;
-    }
-
-    public void setJobPost(JobPost jobPost) {
-        this.jobPost = jobPost;
-    }
-
-    public String getRoundName() {
-        return roundName;
-    }
-
-    public void setRoundName(String roundName) {
-        this.roundName = roundName;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public LocalDateTime getEndTime() {
@@ -107,27 +85,77 @@ public class AssessmentRound {
         this.endTime = endTime;
     }
 
-    public String getQuestionPdfUrl() {
-        return questionPdfUrl;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setQuestionPdfUrl(String questionPdfUrl) {
-        this.questionPdfUrl = questionPdfUrl;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public String getAnswerPdfUrl() {
-        return answerPdfUrl;
+    public String getEncryptionKey() {
+        return encryptionKey;
     }
 
-    public void setAnswerPdfUrl(String answerPdfUrl) {
-        this.answerPdfUrl = answerPdfUrl;
+    public void setEncryptionKey(String encryptionKey) {
+        this.encryptionKey = encryptionKey;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getEncryptedQuestions() {
+        return encryptedQuestions;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setEncryptedQuestions(String encryptedQuestions) {
+        this.encryptedQuestions = encryptedQuestions;
     }
+
+    public String getEncryptedAnswers() {
+        return encryptedAnswers;
+    }
+
+    public void setEncryptedAnswers(String encryptedAnswers) {
+        this.encryptedAnswers = encryptedAnswers;
+    }
+
+    public int getMin_marks() {
+        return min_marks;
+    }
+
+    public void setMin_marks(int min_marks) {
+        this.min_marks = min_marks;
+    }
+
+    public String getRoundName() {
+        return roundName;
+    }
+
+    public void setRoundName(String roundName) {
+        this.roundName = roundName;
+    }
+
+    public JobPost getJobPost() {
+        return jobPost;
+    }
+
+    public void setJobPost(JobPost jobPost) {
+        this.jobPost = jobPost;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+
 }

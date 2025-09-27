@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
 import com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO;
+import com.CareerNexus_Backend.CareerNexus.dto.RecruiterJobsDTO;
 import com.CareerNexus_Backend.CareerNexus.service.JobPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
