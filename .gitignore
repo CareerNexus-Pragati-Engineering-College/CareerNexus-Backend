@@ -33,3 +33,5 @@ build/
 .vscode/
 
 static/uploads
+
+/src/main/resources/gcp-credentials.json
