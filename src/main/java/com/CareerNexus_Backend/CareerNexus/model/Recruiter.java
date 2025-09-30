@@ -40,6 +40,9 @@ public class Recruiter {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name="img_loc")
+    private String img_loc;
+
     @Version
     private Long version;
 
@@ -50,7 +53,7 @@ public class Recruiter {
 
 
     public Recruiter(User user, String email, String firstName, String lastName,
-                            String company, String designation, String phone) {
+                            String company, String designation, String phone,String img_loc) {
         this.user = user;
         this.userId = user.getUserId();
         this.email = email;
@@ -59,6 +62,7 @@ public class Recruiter {
         this.company = company;
         this.designation = designation;
         this.phone = phone;
+        this.img_loc=img_loc;
 
     }
 
@@ -140,5 +144,13 @@ public class Recruiter {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    public String getImg_loc() {
+        return img_loc;
+    }
+
+    public void setImg_loc(String img_loc) {
+        this.img_loc = img_loc;
     }
 }

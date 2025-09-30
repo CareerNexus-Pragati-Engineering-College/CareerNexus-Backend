@@ -63,13 +63,15 @@ public class AssessmentService {
         File pdfFile = new File("./static/uploads/assessment-files" + questionPdfPath);
 
         FileSystemResource fileResource = new FileSystemResource(pdfFile);
-
+        System.out.println("requesting Gemini model to extract data from pdf...");
         String response=questionExtractionService.extractQuestionsFromFile(fileResource);
+        System.out.println(response);
 
 
         /*  this method checks it the responses not equal to null then delete the file that temporary stored in assessment files.
        (Question pdf file).
         */
+
         if(response!=null){
             Files.deleteIfExists(pdfFile.toPath());
         }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("api/student")
@@ -20,8 +21,15 @@ public class StudentController {
     private StudentServices studentServices;
 
     @PostMapping("/{userId}/profile")
-        public ResponseEntity<StudentDetailsDTO> Profile(@RequestBody StudentDetailsDTO studentDetailsDTO, @PathVariable String userId) {
+        public ResponseEntity<StudentDetailsDTO> Profile(@RequestBody StudentDetailsDTO studentDetailsDTO, @PathVariable String userId,Authentication authentication) {
         try {
+
+            String authenicatedUserName=authentication.getName();
+
+            if(!authenicatedUserName.equals(userId)){
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+
             StudentDetailsDTO createdOrUpdatedProfile = studentServices.createOrUpdateProfile(studentDetailsDTO,userId);
             return new ResponseEntity<>(createdOrUpdatedProfile, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -30,8 +38,13 @@ public class StudentController {
     }
 
         @GetMapping("/{userId}/profile")
-        public ResponseEntity<StudentDetailsDTO> getStudentProfile (@PathVariable String userId)
+        public ResponseEntity<StudentDetailsDTO> getStudentProfile (@PathVariable String userId,Authentication authentication)
         {
+            String authenicatedUserName=authentication.getName();
+
+            if(!authenicatedUserName.equals(userId)){
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
             try {
                 StudentDetailsDTO profileData = studentServices.getProfileData(userId);
                 return ResponseEntity.ok(profileData);
