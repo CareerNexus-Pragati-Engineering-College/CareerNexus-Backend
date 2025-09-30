@@ -19,7 +19,7 @@ public class ExamController {
     private AssessmentService assessmentService;
 
     @PostMapping("/recruiter/mcq/assessment")
-    public ResponseEntity<String> AssessmentConfiguration(@RequestPart("roundDetails") AssessmentRoundDto assessmentRoundDto, @RequestPart("questionPdf") MultipartFile questionPdf,@RequestPart("answerPdf") MultipartFile onPdf) throws Exception {
+    public ResponseEntity<String> AssessmentConfiguration(@RequestPart("roundDetails") AssessmentRoundDto assessmentRoundDto, @RequestPart("questionPdf") MultipartFile questionPdf) throws Exception {
         return  assessmentService.assessmentConfiguration(assessmentRoundDto,questionPdf);
     }
 

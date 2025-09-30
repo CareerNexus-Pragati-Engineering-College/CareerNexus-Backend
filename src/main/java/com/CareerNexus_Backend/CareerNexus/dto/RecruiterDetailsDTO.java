@@ -14,6 +14,7 @@ public class RecruiterDetailsDTO {
     private String designation;
     private String company;
     private LocalDateTime createdAt;
+    private  String img_loc;
 
 
     public RecruiterDetailsDTO() {}
@@ -29,6 +30,7 @@ public class RecruiterDetailsDTO {
             this.designation=recruiterDetails.getDesignation();
             this.email=recruiterDetails.getEmail();
             this.createdAt=recruiterDetails.getCreatedAt();
+            this.img_loc=recruiterDetails.getImg_loc();
         }
     }
 
@@ -96,5 +98,13 @@ public class RecruiterDetailsDTO {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getImg_loc() {
+        return img_loc;
+    }
+
+    public void setImg_loc(String img_loc) {
+        this.img_loc = img_loc;
     }
 }

@@ -10,10 +10,18 @@ import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository; // Assuming this is your repo name
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository; // Assuming you use UserRepository for User entity
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Import Spring's Transactional
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RecruiterService {
@@ -31,25 +39,36 @@ public class RecruiterService {
         }
         return false;
     }
-
+    @Value("${file.img.upload-dir}")
+    private String uploadDir;
     @Transactional
-    public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO)  {
+    public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO, MultipartFile img) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         Optional<Recruiter> recruiterDetail=this.getProfileForRecruiter(userId);
 
         Recruiter recruiterDetails;
-
         if (recruiterDetail.isPresent()) {
+
             recruiterDetails = recruiterDetail.get();
+            String path=recruiterDetails.getImg_loc();
             recruiterDetails.setFirstName(recruiterDetailsDTO.getFirstName());
             recruiterDetails.setLastName(recruiterDetailsDTO.getLastName());
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
             recruiterDetails.setDesignation(recruiterDetailsDTO.getDesignation());
             recruiterDetails.setPhone(recruiterDetailsDTO.getPhone());
+            Files.copy(img.getInputStream(), Path.of("./static/uploads/images"+path));
 
         } else {
+            String originalFilename = img.getOriginalFilename();
+            String fileExtension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String uniqueFileName =  UUID.randomUUID().toString() + "__"+ fileExtension;
+            Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
+            Files.copy(img.getInputStream(), filePath);
 
             recruiterDetails = new Recruiter(
                     user,
@@ -58,7 +77,8 @@ public class RecruiterService {
                     recruiterDetailsDTO.getLastName(),
                     recruiterDetailsDTO.getCompany(),
                     recruiterDetailsDTO.getDesignation(),
-                    recruiterDetailsDTO.getPhone()
+                    recruiterDetailsDTO.getPhone(),
+                    "/"+uniqueFileName
             );
 
 
