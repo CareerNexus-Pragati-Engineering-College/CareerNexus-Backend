@@ -1,7 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.controller;
 
 
+import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentDetailsDTO;
+import com.CareerNexus_Backend.CareerNexus.service.RecruiterService;
 import com.CareerNexus_Backend.CareerNexus.service.StudentServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/student")
 public class StudentController {
@@ -19,6 +23,9 @@ public class StudentController {
     private static final Logger log = LogManager.getLogger(StudentController.class);
     @Autowired
     private StudentServices studentServices;
+
+    @Autowired
+    private RecruiterService recruiterService;
 
     @PostMapping("/{userId}/profile")
         public ResponseEntity<StudentDetailsDTO> Profile(@RequestBody StudentDetailsDTO studentDetailsDTO, @PathVariable String userId,Authentication authentication) {
@@ -51,6 +58,11 @@ public class StudentController {
             }  catch (Exception e) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
+        }
+
+        @GetMapping("/companies-visited")
+        public List<RecruiterDetailsDTO> recentCompanies() {
+            return recruiterService.getAllCompanies();
         }
 }
 

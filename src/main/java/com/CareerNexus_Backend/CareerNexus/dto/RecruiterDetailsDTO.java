@@ -1,6 +1,8 @@
 package com.CareerNexus_Backend.CareerNexus.dto;
 
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
+import org.checkerframework.checker.units.qual.C;
+
 import java.time.LocalDateTime;
 
 
@@ -32,6 +34,12 @@ public class RecruiterDetailsDTO {
             this.createdAt=recruiterDetails.getCreatedAt();
             this.img_loc=recruiterDetails.getImg_loc();
         }
+    }
+
+    public RecruiterDetailsDTO(String  Company,String img_loc,String recruiterId){
+        this.company= Company;
+        this.img_loc=img_loc;
+        this.userId=recruiterId;
     }
 
 
