@@ -130,5 +130,8 @@ public class ApplicationService {
         return applicationRepository.findAllStudentsApplications(id);
     }
 
+//    public int getCountApplicationByStudent(String userId){
+//        return  applicationRepository.findCount(userId);
+//    }
 
 }

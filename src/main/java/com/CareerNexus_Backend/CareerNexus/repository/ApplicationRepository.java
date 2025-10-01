@@ -47,6 +47,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     )
     List<StudentsApplicationsDTO> findAllStudentsApplications(@Param("Id") Long id);
 
-
+//    int findCount(String userId);
 }
 

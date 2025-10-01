@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Service
 public class RecruiterService {
@@ -52,13 +55,13 @@ public class RecruiterService {
         if (recruiterDetail.isPresent()) {
 
             recruiterDetails = recruiterDetail.get();
-            String path=recruiterDetails.getImg_loc();
+
             recruiterDetails.setFirstName(recruiterDetailsDTO.getFirstName());
             recruiterDetails.setLastName(recruiterDetailsDTO.getLastName());
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
             recruiterDetails.setDesignation(recruiterDetailsDTO.getDesignation());
             recruiterDetails.setPhone(recruiterDetailsDTO.getPhone());
-            Files.copy(img.getInputStream(), Path.of("./static/uploads/images"+path));
+            Files.copy(img.getInputStream(), Paths.get(uploadDir).resolve(recruiterDetails.getImg_loc().substring(1)),REPLACE_EXISTING);
 
         } else {
             String originalFilename = img.getOriginalFilename();
@@ -108,4 +111,7 @@ public class RecruiterService {
         return new UserDTO(recruiterDetails);
     }
 
+    public List<RecruiterDetailsDTO> getAllCompanies() {
+        return recruiterDetailsRepository.findAllCompanies();
+    }
 }
