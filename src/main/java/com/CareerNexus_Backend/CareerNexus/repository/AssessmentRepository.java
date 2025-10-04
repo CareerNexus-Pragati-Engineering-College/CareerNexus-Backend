@@ -21,7 +21,15 @@ public interface AssessmentRepository extends JpaRepository<AssessmentRound, Lon
             "conf.min_marks) " +
             "FROM AssessmentRound conf " +
             "INNER JOIN conf.jobPost jp " +
-            "WHERE jp.id = :id") // User check has been removed
+            "WHERE jp.id = :id")
     List<AssessmentRoundDto> findAssessmentRoundsByJobId(@Param("id") Long id);
 
+    @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.AssessmentRoundDto(" +
+            "ar.roundName," +
+            "ar.startTime, " +
+            "ar.endTime" +
+            ") " + // Space added
+            "FROM AssessmentRound ar " +
+            "WHERE ar.jobPost.id = :id")
+    List<AssessmentRoundDto> findConfigurationByJobId(@Param("id") Long jobId);
 }

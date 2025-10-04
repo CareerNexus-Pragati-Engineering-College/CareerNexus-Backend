@@ -96,7 +96,7 @@ public class AssessmentService {
                 jobPost,
                 assessmentRoundDto.getRoundName(),
                 assessmentRoundDto.getMin_marks(),
-                encryptionService.encrypt(response,encryptionKey),
+                encryptionService.encrypt(questionsOnlyJson,encryptionKey),
                 encryptionService.encrypt(answersOnlyJson,encryptionKey),
                 encryptionKey,
                 assessmentRoundDto.getStartTime(),
@@ -110,7 +110,12 @@ public class AssessmentService {
     }
 
     public List<AssessmentRoundDto> getAssessmentConfigurationData(String recruiterId, Long jobId) {
+        System.out.println(recruiterId);
         return assessmentRepository.findAssessmentRoundsByJobId(jobId);
+    }
+
+    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(Long jobId) {
+        return  assessmentRepository.findConfigurationByJobId(jobId);
     }
 }
 

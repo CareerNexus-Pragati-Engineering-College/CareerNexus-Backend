@@ -74,8 +74,8 @@ public class ApplicationController {
         return applicationService.getStudentApplicationsForJobId(id);
     }
 
-//    @GetMapping("student/apply/count/{userId}")
-//    public  int studentApplicationCount(@PathVariable String userId){
-//        return applicationService.getCountApplicationByStudent(userId);
-//    }
+    @GetMapping("student/apply/count/{userId}")
+    public  JobApplicationCountDTO studentApplicationCount(@PathVariable String userId){
+        return applicationService.getCountApplicationByStudent(userId);
+    }
 }
