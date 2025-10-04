@@ -8,6 +8,31 @@ public class AssessmentRoundDto {
     private String roundName;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private int min_marks;
+
+
+
+
+    public AssessmentRoundDto(String createdByUserId, Long jobPostId, String roundName, LocalDateTime startTime, LocalDateTime endTime, int min_marks) {
+        this.createdByUserId = createdByUserId;
+        this.jobPostId = jobPostId;
+        this.roundName = roundName;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.min_marks = min_marks;
+    }
+
+    public AssessmentRoundDto( String roundName,LocalDateTime startTime, LocalDateTime endTime) throws Exception {
+        this.roundName = roundName;
+        this.startTime = startTime;
+        this.endTime = endTime;
+
+    }
+
+
+
+    public AssessmentRoundDto() {
+    }
 
     public String getCreatedByUserId() {
         return createdByUserId;
@@ -47,5 +72,13 @@ public class AssessmentRoundDto {
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    public int getMin_marks() {
+        return min_marks;
+    }
+
+    public void setMin_marks(int min_marks) {
+        this.min_marks = min_marks;
     }
 }
