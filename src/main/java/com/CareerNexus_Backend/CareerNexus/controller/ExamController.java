@@ -28,4 +28,9 @@ public class ExamController {
         return  assessmentService.getAssessmentConfigurationData(recruiterId,job_id);
     }
 
+    @GetMapping("/student/{job_id}")
+    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(@PathVariable Long job_id){
+        return  assessmentService.getAssessmentConfigurationForJobId(job_id);
+    }
+
 }

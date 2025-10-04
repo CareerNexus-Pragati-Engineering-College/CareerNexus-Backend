@@ -21,9 +21,13 @@ public class JobApplicationCountDTO {
     }
 
 
-    public JobApplicationCountDTO() {
+    public JobApplicationCountDTO(Long applicationCount) {
+        this.applicationCount=applicationCount;
     }
 
+
+    public JobApplicationCountDTO() {
+    }
 
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
