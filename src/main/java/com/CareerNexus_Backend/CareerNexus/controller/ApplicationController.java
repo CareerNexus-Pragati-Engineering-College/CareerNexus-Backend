@@ -30,6 +30,7 @@ public class ApplicationController {
 
 
 
+
     @GetMapping("/my-applications/{userId}")
     public ResponseEntity<List<ApplicationDTO>> getMyApplications(@PathVariable String userId) {
         try {
@@ -71,5 +72,10 @@ public class ApplicationController {
   @GetMapping("/student/applications/{id}")
     public List<StudentsApplicationsDTO> getStudentApplicationsForJobId(@PathVariable  Long id){
         return applicationService.getStudentApplicationsForJobId(id);
+    }
+
+    @GetMapping("student/apply/count/{userId}")
+    public  JobApplicationCountDTO studentApplicationCount(@PathVariable String userId){
+        return applicationService.getCountApplicationByStudent(userId);
     }
 }

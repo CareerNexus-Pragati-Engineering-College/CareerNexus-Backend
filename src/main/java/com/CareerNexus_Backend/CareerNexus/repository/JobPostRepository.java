@@ -29,4 +29,6 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
             "ORDER BY poster.userId")
     List<JobPostDTO> findAllJobs();
 
+
+
 }

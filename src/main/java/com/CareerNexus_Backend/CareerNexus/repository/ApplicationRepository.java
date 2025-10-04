@@ -1,6 +1,7 @@
 package com.CareerNexus_Backend.CareerNexus.repository;
 
 
+import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
 import com.CareerNexus_Backend.CareerNexus.model.Application;
@@ -47,6 +48,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     )
     List<StudentsApplicationsDTO> findAllStudentsApplications(@Param("Id") Long id);
 
-
+    @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO(COUNT(a)) " +
+            "FROM Application a " +
+            "WHERE a.student.userId = :userId")
+    JobApplicationCountDTO findCount(@Param("userId") String userId);
 }
 
