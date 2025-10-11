@@ -1,5 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
+import com.CareerNexus_Backend.CareerNexus.config.FirebaseConfig;
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
@@ -15,11 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +44,9 @@ public class ApplicationService {
 
     @Value("${file.upload-dir}")
     private String uploadDir;
+
+    @Autowired
+    private FirebaseConfig firebaseConfig;
 
     @Transactional
     public ApplicationDTO applyForJob(Long jobId, String studentUserId, MultipartFile resumeFile) throws Exception {
@@ -73,9 +80,11 @@ public class ApplicationService {
                     fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
                 }
                 String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
-                Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
-                Files.copy(resumeFile.getInputStream(),filePath);
-                resumeUrl = "/" + uniqueFileName;
+
+
+                resumeUrl = firebaseConfig.uploadFile(resumeFile,uniqueFileName,"resumes");
+            System.out.println(resumeUrl);
+
             } catch (IOException e) {
 
                 throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
@@ -122,7 +131,7 @@ public class ApplicationService {
         }
         return applicationRepository.countApplicationsWithDetailsPerJobForRecruiter(recruiter);
     }
- public JobApplicationCountDTO getCountById(Long id){
+    public JobApplicationCountDTO getCountById(Long id){
         return applicationRepository.countApplicationByJobId(id);
     }
 
@@ -135,4 +144,20 @@ public class ApplicationService {
         return  applicationRepository.findCount(userId);
     }
 
+
+
+    public void updateApplicationByJobIdAndUserId(String userId, Long jobId, int minMarks, int marks) {
+        Optional<User> student=userAuthRepository.findById(userId);
+        System.out.println("updating Student Application Form"+" "+minMarks);
+        Application application=applicationRepository.findByJobPost_IdAndStudent_UserId(jobId,userId).get();
+        if(marks>=minMarks){
+            application.setStatus("In progress");
+        }
+        else{
+            application.setStatus("Rejected");
+        }
+
+        applicationRepository.save(application);
+
+    }
 }
