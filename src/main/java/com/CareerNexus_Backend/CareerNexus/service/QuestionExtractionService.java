@@ -1,53 +1,108 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.model.Media;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource; // Import the generic Resource
-import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class QuestionExtractionService {
 
-    private final ChatClient chatClient;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    public QuestionExtractionService(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    @Value("${fastapi.extract.url:http://localhost:8000/assessment-extract}")
+    private String fastApiExtractUrl;
+
+    public QuestionExtractionService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
-
 
     public String extractQuestionsFromFile(Resource fileResource) {
+        try {
 
-        String promptText = """
-               
-        You are an automated API endpoint. Your ONLY function is to parse the text of a document and return a structured JSON object.
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-                Analyze the following document text and perform these actions:
-        1.  Identify all multiple-choice questions and their corresponding correct answers.
-        2.  Construct a single JSON object as the output.
-        3.  This object MUST contain exactly two top-level keys: "questions" and "answers".
-        4.  The value for "questions" MUST be a JSON array of objects. Each object must contain the keys: "question_no", "question_text", and "options".
-        5.  The value for "answers" MUST be a JSON array of objects. Each object must contain the keys: "question_no" and "correct_answer".
-        6.  The value of "correct_answer" MUST exactly match one of the strings in the corresponding "options" array.
-        7.  Ignore all non-essential text like page numbers, instructions, or explanations.
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("assessment_data", fileResource);
 
-                CRITICAL FINAL INSTRUCTION: Your entire response must be ONLY the raw JSON object itself. Do NOT include the word "json", markdown backticks (
+            HttpEntity<MultiValueMap<String, Object>> requestEntity =
+                    new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response =
+                    restTemplate.postForEntity(fastApiExtractUrl, requestEntity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return parseAndValidateResponse(response.getBody());
+            }
+
+            System.err.println("FastAPI returned non-OK status: " + response.getStatusCode());
+            return getMockResponse();
+
+        } catch (Exception e) {
+            System.err.println("Error calling FastAPI: " + e.getMessage());
+            return getMockResponse();
+        }
+    }
+
+    /**
+     * Strict validation + cleaning
+     */
+    private String parseAndValidateResponse(String responseBody) {
+        try {
+
+            // Remove everything before first {
+            int startIndex = responseBody.indexOf("{");
+            if (startIndex > 0) {
+                responseBody = responseBody.substring(startIndex);
+            }
+
+            JsonNode root = objectMapper.readTree(responseBody);
+
+            if (!root.has("questions") || !root.has("answers")) {
+                System.err.println("Invalid JSON structure from FastAPI");
+                return getMockResponse();
+            }
+
+            ArrayNode questions = (ArrayNode) root.get("questions");
+            ArrayNode validQuestions = objectMapper.createArrayNode();
+
+            // 🔥 Filter invalid questions (less than 4 options)
+            for (JsonNode q : questions) {
+                JsonNode options = q.get("options");
+                if (options != null && options.isArray() && options.size() >= 4) {
+                    validQuestions.add(q);
+                }
+            }
+
+            // Replace with cleaned list
+            ((com.fasterxml.jackson.databind.node.ObjectNode) root)
+                    .set("questions", validQuestions);
+
+            return objectMapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(root);
+
+        } catch (Exception e) {
+            System.err.println("JSON Parsing Error: " + e.getMessage());
+            return getMockResponse();
+        }
+    }
+
+    private String getMockResponse() {
+        return """
+        {
+          "questions": [],
+          "answers": []
+        }
         """;
-
-        Media pdfMedia = new Media(MediaType.APPLICATION_PDF, fileResource);
-
-
-        UserMessage userMessage = new UserMessage(promptText, List.of(pdfMedia));
-        Prompt prompt = new Prompt(userMessage);
-
-        // Call the AI model and return the content.
-        return chatClient.prompt(prompt).call().content();
     }
 }
-

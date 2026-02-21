@@ -5,6 +5,7 @@ import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
+import com.CareerNexus_Backend.CareerNexus.service.EmailService;
 import com.CareerNexus_Backend.CareerNexus.service.UserAuthService;
 import com.CareerNexus_Backend.CareerNexus.service.UserAuthServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class UserAuthController {
     // Use a logger instead of System.out.println
     private static final Logger logger = LoggerFactory.getLogger(UserAuthController.class);
 
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private UserAuthServiceImplementation userAuthService;
@@ -90,6 +93,7 @@ public class UserAuthController {
     @PostMapping("/login")
 
     public ResponseEntity<Map<String,String>> authenticateUser(@RequestBody UsersDTO user) throws AuthenticationException {
-      return userAuthService.login(user);
+
+        return userAuthService.login(user);
     }
 }
