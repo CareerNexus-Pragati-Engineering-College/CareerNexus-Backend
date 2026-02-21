@@ -12,19 +12,12 @@ import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
 
 @Service
 public class ApplicationService {
@@ -38,101 +31,134 @@ public class ApplicationService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
+
+    // ── Apply For Job ─────────────────────────────────────────────────────────
 
     @Transactional
-    public ApplicationDTO applyForJob(Long jobId, String studentUserId, MultipartFile resumeFile) throws Exception {
+    public ApplicationDTO applyForJob(Long jobId, String studentUserId,
+                                      MultipartFile resumeFile) throws Exception {
 
+        // Find job post
         JobPost jobPost = jobPostRepository.findById(jobId)
-                .orElseThrow(() -> new Exception("JobPost not found with ID: " + jobId));
+                .orElseThrow(() -> new Exception(
+                        "JobPost not found with ID: " + jobId));
 
-
+        // Find student user
         User student = userAuthRepository.findById(studentUserId)
-                .orElseThrow(() -> new Exception("Student User not found with ID: " + studentUserId));
+                .orElseThrow(() -> new Exception(
+                        "Student User not found with ID: " + studentUserId));
 
-
+        // Only students can apply
         if (!"Student".equalsIgnoreCase(student.getRole())) {
-            throw new IllegalArgumentException("Only users with 'STUDENT' role can apply for jobs.");
+            throw new IllegalArgumentException(
+                    "Only users with 'STUDENT' role can apply for jobs.");
         }
 
-
-        Optional<Application> existingApplication = applicationRepository.findByJobPost_IdAndStudent_UserId(jobId, studentUserId);
+        // Check if already applied
+        Optional<Application> existingApplication = applicationRepository
+                .findByJobPost_IdAndStudent_UserId(jobId, studentUserId);
         if (existingApplication.isPresent()) {
-            throw new IllegalArgumentException("Student has already applied for this job.");
+            throw new IllegalArgumentException(
+                    "Student has already applied for this job.");
         }
 
-
-        String resumeUrl = null;
-        if (resumeFile != null && !resumeFile.isEmpty()) {
-            try {
-
-                String originalFilename = resumeFile.getOriginalFilename();
-                String fileExtension = "";
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                }
-                String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
-                Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
-                Files.copy(resumeFile.getInputStream(),filePath);
-                resumeUrl = "/" + uniqueFileName;
-            } catch (IOException e) {
-
-                throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
-            }
-        } else {
-            throw new IllegalArgumentException("Resume file is required for application.");
+        // Resume is required
+        if (resumeFile == null || resumeFile.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Resume file is required for application.");
         }
+
+        // Validate resume is PDF
+        if (!"application/pdf".equals(resumeFile.getContentType())) {
+            throw new IllegalArgumentException(
+                    "Resume must be a PDF file.");
+        }
+
+        // Validate resume size — 5MB limit
+        if (resumeFile.getSize() > 5L * 1024 * 1024) {
+            throw new IllegalArgumentException(
+                    "Resume file size must be under 5MB.");
+        }
+
+        // Upload resume to Supabase
+        String resumeUrl = supabaseStorageService.uploadResume(
+                resumeFile,
+                jobId.toString(),
+                studentUserId);
+
+        // Save application with Supabase public URL
         Application application = new Application(jobPost, student, resumeUrl);
         return new ApplicationDTO(applicationRepository.save(application));
     }
 
-    @Transactional()
+    // ── Get Application By Id ─────────────────────────────────────────────────
+
+    @Transactional
     public ApplicationDTO getApplicationById(Long applicationId) throws Exception {
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new Exception("Application not found with ID: " + applicationId));
+                .orElseThrow(() -> new Exception(
+                        "Application not found with ID: " + applicationId));
         return new ApplicationDTO(application);
     }
 
-    @Transactional()
+    // ── Get Applications By Student ───────────────────────────────────────────
+
+    @Transactional
     public List<ApplicationDTO> getApplicationsByStudent(String studentUserId) {
-        List<Application> applications = applicationRepository.findByStudent_UserId(studentUserId);
-        return applications.stream()
+        return applicationRepository.findByStudent_UserId(studentUserId)
+                .stream()
                 .map(ApplicationDTO::new)
                 .collect(Collectors.toList());
     }
 
+    // ── Get Applications For Job ──────────────────────────────────────────────
 
-    @Transactional()
+    @Transactional
     public List<ApplicationDTO> getApplicationsForJob(Long jobId) {
-        List<Application> applications = applicationRepository.findByJobPost_Id(jobId);
-        return applications.stream()
+        return applicationRepository.findByJobPost_Id(jobId)
+                .stream()
                 .map(ApplicationDTO::new)
                 .collect(Collectors.toList());
     }
 
+    // ── Get Application Counts Per Job For Recruiter ──────────────────────────
 
-    // it shows the total student applied for each individual job posted by specific recruiter
-    @Transactional()
-    public List<JobApplicationCountDTO> getApplicationCountsPerJobForRecruiter(String recruiterId) {
+    @Transactional
+    public List<JobApplicationCountDTO> getApplicationCountsPerJobForRecruiter(
+            String recruiterId) {
+
         User recruiter = userAuthRepository.findById(recruiterId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recruiter user not found with ID: " + recruiterId));
-        if (!"recruiter".equalsIgnoreCase(recruiter.getRole()) && !"tpo".equalsIgnoreCase(recruiter.getRole())) {
-            throw new IllegalArgumentException("User ID " + recruiterId + " does not belong to a recruiter or TPO.");
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Recruiter user not found with ID: " + recruiterId));
+
+        if (!"recruiter".equalsIgnoreCase(recruiter.getRole())
+                && !"tpo".equalsIgnoreCase(recruiter.getRole())) {
+            throw new IllegalArgumentException(
+                    "User ID " + recruiterId
+                            + " does not belong to a recruiter or TPO.");
         }
-        return applicationRepository.countApplicationsWithDetailsPerJobForRecruiter(recruiter);
+
+        return applicationRepository
+                .countApplicationsWithDetailsPerJobForRecruiter(recruiter);
     }
- public JobApplicationCountDTO getCountById(Long id){
+
+    // ── Get Count By Job Id ───────────────────────────────────────────────────
+
+    public JobApplicationCountDTO getCountById(Long id) {
         return applicationRepository.countApplicationByJobId(id);
     }
+
+    // ── Get Student Applications For Job ─────────────────────────────────────
 
     public List<StudentsApplicationsDTO> getStudentApplicationsForJobId(Long id) {
         return applicationRepository.findAllStudentsApplications(id);
     }
 
-    public JobApplicationCountDTO getCountApplicationByStudent(String userId){
+    // ── Get Count Of Applications By Student ─────────────────────────────────
 
-        return  applicationRepository.findCount(userId);
+    public JobApplicationCountDTO getCountApplicationByStudent(String userId) {
+        return applicationRepository.findCount(userId);
     }
-
 }
