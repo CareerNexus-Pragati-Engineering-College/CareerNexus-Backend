@@ -52,5 +52,13 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             "FROM Application a " +
             "WHERE a.student.userId = :userId")
     JobApplicationCountDTO findCount(@Param("userId") String userId);
+
+
+    /**
+     * Finds all students who have applied for a specific job.
+     * Updated to use the 'Application' entity to match the repository's context.
+     */
+    @Query("SELECT a.student FROM Application a WHERE a.jobPost.id = :jobId")
+    List<User> findStudentsByJobId(@Param("jobId") Long jobId);
 }
 
