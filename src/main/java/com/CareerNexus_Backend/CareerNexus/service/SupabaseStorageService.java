@@ -82,4 +82,56 @@ public class SupabaseStorageService {
 
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, requestEntity, String.class);
     }
+
+    public String uploadResume(MultipartFile file, String jobId, String studentUserId) throws IOException {
+
+        // Unique file name using jobId + studentUserId for easy identification
+        String uniqueFileName = jobId + "__" + studentUserId + "__" + UUID.randomUUID().toString() + ".pdf";
+
+        String uploadUrl = supabaseConfig.getSupabaseUrl()
+                + "/storage/v1/object/"
+                + supabaseConfig.getBucket()
+                + "/resumes/" + uniqueFileName;  // stored in resumes/ folder
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseKey());
+        headers.set("Content-Type", "application/pdf");
+        headers.set("x-upsert", "false");
+
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(file.getBytes(), headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                uploadUrl,
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return supabaseConfig.getSupabaseUrl()
+                    + "/storage/v1/object/public/"
+                    + supabaseConfig.getBucket()
+                    + "/resumes/" + uniqueFileName;
+        }
+
+        throw new RuntimeException("Resume upload to Supabase failed");
+    }
+
+    public void deleteResume(String fileUrl) {
+
+        String filePath = fileUrl.substring(fileUrl.indexOf("/resumes/") + 1);
+
+        String deleteUrl = supabaseConfig.getSupabaseUrl()
+                + "/storage/v1/object/"
+                + supabaseConfig.getBucket()
+                + "/" + filePath;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseKey());
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        restTemplate.exchange(deleteUrl, HttpMethod.DELETE, requestEntity, String.class);
+    }
+
 }
