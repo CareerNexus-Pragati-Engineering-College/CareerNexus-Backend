@@ -30,11 +30,11 @@ public class uploadHandler {
                 }
                 String uniqueFileName = recruiterId+"__"+job_Id+"__"+ UUID.randomUUID().toString() + "__"+ fileExtension;
                 Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
+                Files.createDirectories(filePath.getParent());
                 Files.copy(file.getInputStream(), filePath);
                 fileUrl="/"+uniqueFileName;
             } catch (IOException e) {
-                throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
-
+                throw new RuntimeException("Failed to store assessment file: " + e.getMessage(), e);
             }
         }
         return fileUrl;

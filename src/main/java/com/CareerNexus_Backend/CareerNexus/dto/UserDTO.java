@@ -12,8 +12,6 @@ public class UserDTO {
     private String firstName;
     private String lastName;
 
-
-
     public UserDTO() {}
 
     public UserDTO(User user) {
@@ -37,6 +35,7 @@ public class UserDTO {
             }
         }
     }
+
     public UserDTO(Recruiter recruiterDetails) {
         if (recruiterDetails != null) {
             this.userId = recruiterDetails.getUserId();
@@ -87,7 +86,19 @@ public class UserDTO {
         this.role = role;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
 
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 }
-
