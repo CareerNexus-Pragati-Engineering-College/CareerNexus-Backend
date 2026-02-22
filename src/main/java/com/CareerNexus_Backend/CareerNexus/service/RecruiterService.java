@@ -1,6 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
-import com.CareerNexus_Backend.CareerNexus.config.FirebaseConfig;
+//import com.CareerNexus_Backend.CareerNexus.config.FirebaseConfig;
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 
 import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
@@ -36,8 +36,8 @@ public class RecruiterService {
     @Autowired
     private UserAuthRepository userRepository;
 
-    @Autowired
-    private FirebaseConfig firebaseConfig;
+//    @Autowired
+//    private FirebaseConfig firebaseConfig;
 
     public boolean isRecruiterAvailable(UsersDTO user){
         Optional<Recruiter> isData=recruiterDetailsRepository.findByUserId(user.getUserId());
