@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,9 @@ public class AssessmentService {
     @Autowired
     private StudentExamAttemptRepository studentExamAttempt;
 
+    @org.springframework.beans.factory.annotation.Value("${file.upload-assessment-files}")
+    private String uploadAssessmentDir;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -63,25 +69,22 @@ public class AssessmentService {
         // Upload files and get their stored paths.
         String questionPdfPath = uploadFileHandler.uploadFileHandler(questionPdf, assessmentRoundDto.getCreatedByUserId(), assessmentRoundDto.getJobPostId());
 
-        if (questionPdfPath == null ) {
-            throw new RuntimeException("Failed to upload one or both PDF files.");
+        if (questionPdfPath == null) {
+            throw new RuntimeException("Failed to upload PDF file.");
         }
 
+        Path pdfFilePath = Paths.get(uploadAssessmentDir).resolve(questionPdfPath.startsWith("/") ? questionPdfPath.substring(1) : questionPdfPath);
+        File pdfFile = pdfFilePath.toFile();
 
-        File pdfFile = new File("./static/uploads/assessment-files" + questionPdfPath);
-
-        FileSystemResource fileResource = new FileSystemResource(pdfFile);
-        System.out.println("requesting Gemini model to extract data from pdf...");
-        String response=questionExtractionService.extractQuestionsFromFile(fileResource);
-        System.out.println(response);
-
-
-        /*  this method checks it the responses not equal to null then delete the file that temporary stored in assessment files.
-       (Question pdf file).
-        */
-
-        if(response!=null){
-            Files.deleteIfExists(pdfFile.toPath());
+        String response = null;
+        try {
+            FileSystemResource fileResource = new FileSystemResource(pdfFile);
+            System.out.println("requesting Gemini model to extract data from pdf...");
+            response = questionExtractionService.extractQuestionsFromFile(fileResource);
+            System.out.println(response);
+        } finally {
+            // Ensure temporary file is always deleted
+            Files.deleteIfExists(pdfFilePath);
         }
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -112,10 +115,14 @@ public class AssessmentService {
                 assessmentRoundDto.getEndTime(),
                 LocalDateTime.now()
         );
-        assessmentRepository.save(assessmentRound);
-
-        assessmentNotificationService.notifyRegisteredStudents(jobPost.getId(),jobPost.getJobTitle(),  assessmentRoundDto.getRoundName(),assessmentRoundDto.getStartTime().toString(),assessmentRoundDto.getEndTime().toString() );
-
+        assessmentNotificationService.notifyRegisteredStudents(
+                jobPost.getId(),
+                jobPost.getJobTitle(),
+                assessmentRoundDto.getRoundName(),
+                assessmentRoundDto.getStartTime().toString(),
+                assessmentRoundDto.getEndTime().toString(),
+                assessmentRound.getId() // pass the newly created assessment ID
+        );
 
         return ResponseEntity.ok("Round Configured Successfully...");
 

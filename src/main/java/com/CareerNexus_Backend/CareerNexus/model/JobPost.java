@@ -2,11 +2,13 @@ package com.CareerNexus_Backend.CareerNexus.model;
 
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class JobPost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

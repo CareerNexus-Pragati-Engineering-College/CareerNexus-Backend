@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-
 @Service
 public class JwtUtils {
     @Value("${application.security.jwt.secret-key}")
@@ -22,11 +21,11 @@ public class JwtUtils {
     private long jwtExpiration;
 
     private String buildToken(
-            String Username
-    ) {
+            String Username, String role) {
         return Jwts
                 .builder()
                 .setSubject(Username)
+                .claim("role", role) // Include role in the token
                 .setIssuedAt(new Date(System.currentTimeMillis())) // When the token was issued
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration)) // When the token expires
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256) // Sign with your secret key and algorithm
@@ -43,8 +42,8 @@ public class JwtUtils {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    public String getToken(String UserName){
-        return buildToken(UserName);
+    public String getToken(String UserName, String role) {
+        return buildToken(UserName, role);
     }
 
     private boolean isTokenExpired(String token) {
@@ -57,6 +56,10 @@ public class JwtUtils {
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

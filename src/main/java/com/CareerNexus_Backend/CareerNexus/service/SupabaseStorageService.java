@@ -134,4 +134,71 @@ public class SupabaseStorageService {
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, requestEntity, String.class);
     }
 
+    public String uploadImage(MultipartFile file) throws IOException {
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String uniqueFileName = UUID.randomUUID().toString() + "__" + fileExtension;
+
+        String uploadUrl = supabaseConfig.getSupabaseUrl()
+                + "/storage/v1/object/"
+                + supabaseConfig.getBucket()
+                + "/images/" + uniqueFileName;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseKey());
+        
+        // Determine content type
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            contentType = "image/jpeg"; // Default
+        }
+        headers.set("Content-Type", contentType);
+        headers.set("x-upsert", "false");
+
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(file.getBytes(), headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                uploadUrl,
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return supabaseConfig.getSupabaseUrl()
+                    + "/storage/v1/object/public/"
+                    + supabaseConfig.getBucket()
+                    + "/images/" + uniqueFileName;
+        }
+
+        throw new RuntimeException("Image upload to Supabase failed");
+    }
+
+    public void deleteImage(String fileUrl) {
+        if (fileUrl == null || !fileUrl.contains("/images/")) {
+            return;
+        }
+
+        String filePath = fileUrl.substring(fileUrl.indexOf("/images/") + 1);
+
+        String deleteUrl = supabaseConfig.getSupabaseUrl()
+                + "/storage/v1/object/"
+                + supabaseConfig.getBucket()
+                + "/" + filePath;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + supabaseConfig.getSupabaseKey());
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        try {
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, requestEntity, String.class);
+        } catch (Exception e) {
+            // Log and ignore if deletion fails (might already be deleted or URL is invalid)
+            System.err.println("Failed to delete image from Supabase: " + e.getMessage());
+        }
+    }
 }

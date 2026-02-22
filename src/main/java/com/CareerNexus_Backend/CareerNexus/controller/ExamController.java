@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -32,8 +33,9 @@ public class ExamController {
         return  assessmentService.assessmentConfiguration(assessmentRoundDto,questionPdf);
     }
 
-    @GetMapping("/recruiter/{recruiterId}/{job_id}")
-    public List<AssessmentRoundDto> getAssessmentConfigurationData(@PathVariable String recruiterId, @PathVariable Long job_id){
+    @GetMapping("/recruiter/{job_id}")
+    public List<AssessmentRoundDto> getAssessmentConfigurationData(Authentication authentication, @PathVariable Long job_id){
+        String recruiterId = authentication.getName();
         return  assessmentService.getAssessmentConfigurationData(recruiterId,job_id);
     }
 
@@ -63,9 +65,10 @@ public class ExamController {
     @PostMapping("/{assessmentId}/submit")
     public ResponseEntity<?> submitExam(
             @PathVariable Long assessmentId,
-            @RequestParam String studentId,
+            Authentication authentication,
             @RequestBody List<StudentAnswerSubmissionDto> answers) {
         try {
+            String studentId = authentication.getName();
             // The processSubmission logic in the service handles grading and status updates
             StudentExamAttempt attempt = assessmentService.processSubmission(assessmentId, studentId, answers);
 

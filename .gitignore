@@ -35,3 +35,7 @@ build/
 static/uploads
 
 /src/main/resources/gcp-credentials.json
+
+/src/main/resources/application.properties
+
+

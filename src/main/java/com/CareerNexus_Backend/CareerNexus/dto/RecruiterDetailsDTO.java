@@ -36,6 +36,7 @@ public class RecruiterDetailsDTO {
         }
     }
 
+
     public RecruiterDetailsDTO(String  Company,String img_loc,String recruiterId){
         this.company= Company;
         this.img_loc=img_loc;

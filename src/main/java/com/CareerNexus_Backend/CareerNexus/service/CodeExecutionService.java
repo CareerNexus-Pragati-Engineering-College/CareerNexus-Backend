@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -50,8 +53,21 @@ public class CodeExecutionService {
         try {
             // 4. Make the POST Request
             return restTemplate.postForObject(ONECOMPILER_URL, entity, CodeExecutionResponseDto.class);
+        } catch (HttpClientErrorException e) {
+            // Handle RapidAPI specific errors (401, 403, 429)
+            String errorMsg = "Execution Service Error: ";
+            if (e.getStatusCode().value() == 429) {
+                errorMsg += "Rate limit exceeded. Please try again later.";
+            } else if (e.getStatusCode().value() == 401 || e.getStatusCode().value() == 403) {
+                errorMsg += "Authentication failed with execution provider.";
+            } else {
+                errorMsg += e.getMessage();
+            }
+            throw new RuntimeException(errorMsg);
+        } catch (RestClientException e) {
+            throw new RuntimeException("Network error connecting to execution provider: " + e.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException("Code execution failed: " + e.getMessage());
+            throw new RuntimeException("Code execution failed unexpectedly: " + e.getMessage());
         }
     }
 
@@ -60,8 +76,9 @@ public class CodeExecutionService {
             case "python" -> "py";
             case "java" -> "java";
             case "cpp", "c++" -> "cpp";
+            case "c" -> "c";
             case "javascript" -> "js";
-            default -> "txt";
+            default -> throw new IllegalArgumentException("Unknown language extension");
         };
     }
 }

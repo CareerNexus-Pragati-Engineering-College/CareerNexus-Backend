@@ -16,6 +16,7 @@ public class StudentDetailsDTO {
     private String skills;
     private String email;
     private String urls;
+    private String img_loc;
 
     public StudentDetailsDTO() {}
 
@@ -34,6 +35,7 @@ public class StudentDetailsDTO {
             this.skills = studentDetails.getSkills();
             this.email=studentDetails.getEmail();
             this.urls=studentDetails.getUrls();
+            this.img_loc = studentDetails.getImg_loc();
         }
     }
 
@@ -131,5 +133,13 @@ public class StudentDetailsDTO {
 
     public void setUrls(String urls) {
         this.urls = urls;
+    }
+
+    public String getImg_loc() {
+        return img_loc;
+    }
+
+    public void setImg_loc(String img_loc) {
+        this.img_loc = img_loc;
     }
 }
