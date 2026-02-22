@@ -161,7 +161,6 @@ public class CodingAssessmentService {
                         totalScore += tc.getMarks();
                     }
                 } catch (Exception e) {
-                    // Log error and continue to next test case
                     System.err.println("Error executing test case " + tc.getId() + ": " + e.getMessage());
                 }
             }
@@ -174,14 +173,40 @@ public class CodingAssessmentService {
             submissionDataJson = "Error serializing submission data";
         }
 
-        CodingAssessmentResult result = new CodingAssessmentResult(
-                assessment,
-                student,
-                totalScore,
-                maxScore,
-                submissionDataJson
-        );
+        // --- LATEST CODE ONLY LOGIC ---
+        // Check if a result already exists for this student and assessment
+        CodingAssessmentResult result = resultRepository.findByStudent_UserIdAndAssessment_Id(studentId, assessmentId)
+                .orElse(new CodingAssessmentResult(assessment, student, 0, 0, ""));
+
+        result.setTotalScore(totalScore);
+        result.setMaxScore(maxScore);
+        result.setSubmissionData(submissionDataJson);
+        result.setSubmittedAt(LocalDateTime.now());
 
         return resultRepository.save(result);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StudentAssessmentDashboardDto> getStudentAssessmentDashboard(String studentId) {
+        List<CodingAssessment> assessments = assessmentRepository.findAllByOrderByCreatedAtDesc();
+        List<StudentAssessmentDashboardDto> dashboard = new ArrayList<>();
+
+        for (CodingAssessment assessment : assessments) {
+            CodingAssessmentResult result = resultRepository.findByStudent_UserIdAndAssessment_Id(studentId, assessment.getId())
+                    .orElse(null);
+
+            dashboard.add(new StudentAssessmentDashboardDto(
+                    assessment.getId(),
+                    assessment.getAssessmentName(),
+                    assessment.getJobPost() != null ? assessment.getJobPost().getId() : null,
+                    assessment.getStartTime(),
+                    assessment.getEndTime(),
+                    result != null,
+                    result != null ? result.getTotalScore() : null,
+                    result != null ? result.getMaxScore() : null
+            ));
+        }
+
+        return dashboard;
     }
 }

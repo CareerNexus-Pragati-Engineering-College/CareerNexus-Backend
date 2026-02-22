@@ -41,6 +41,12 @@ public class CodingAssessmentController {
         return ResponseEntity.ok(assessmentRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @GetMapping("/student/dashboard")
+    public ResponseEntity<List<StudentAssessmentDashboardDto>> getStudentDashboard(Authentication authentication) {
+        String studentId = authentication.getName();
+        return ResponseEntity.ok(codingAssessmentService.getStudentAssessmentDashboard(studentId));
+    }
+
     @GetMapping("/{id}/start")
     public ResponseEntity<?> startAssessment(@PathVariable Long id) {
         try {
