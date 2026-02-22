@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-
 import java.util.Optional;
 
 @Service
@@ -35,14 +34,13 @@ public class StudentServices {
 
     public boolean isStudentAvailable(UsersDTO user) {
         Optional<Student> isData = studentRepository.findByUserId(user.getUserId());
-        if (isData.isEmpty()) {
-            return true;
-        }
-        return false;
+        return isData.isEmpty();
     }
 
     @Transactional
-    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO, String userId, MultipartFile img) throws Exception {
+    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO,
+                                                   String userId,
+                                                   MultipartFile img) throws Exception {
 
         User user = userAuthRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -50,12 +48,15 @@ public class StudentServices {
                     return new ResourceNotFoundException("User not found with ID: " + userId);
                 });
 
-
-        Optional<Student> studentDetail=this.getProfileForStudent(userId);
+        Optional<Student> studentDetail = this.getProfileForStudent(userId);
 
         Student studentDetails;
+
         if (studentDetail.isPresent()) {
+
+            // 🔁 UPDATE EXISTING PROFILE
             studentDetails = studentDetail.get();
+
             studentDetails.setUser(user);
             studentDetails.setFirstName(studentDetailsDTO.getFirstName());
             studentDetails.setLastName(studentDetailsDTO.getLastName());
@@ -67,12 +68,21 @@ public class StudentServices {
             studentDetails.setSkills(studentDetailsDTO.getSkills());
             studentDetails.setEmail(studentDetailsDTO.getEmail());
 
+            // ✅ FIX: UPDATE URLS ALSO
+            studentDetails.setUrls(studentDetailsDTO.getUrls());
+
             if (img != null && !img.isEmpty()) {
                 try {
                     String imageUrl = supabaseStorageService.uploadImage(img);
-                    supabaseStorageService.deleteImage(studentDetails.getImg_loc());
+
+                    if (studentDetails.getImg_loc() != null) {
+                        supabaseStorageService.deleteImage(studentDetails.getImg_loc());
+                    }
+
                     studentDetails.setImg_loc(imageUrl);
+
                     logger.info("Updated profile image for student: {} in Supabase", userId);
+
                 } catch (IOException e) {
                     logger.error("Failed to update profile image for student: {} in Supabase. Error: {}", userId, e.getMessage());
                     throw e;
@@ -80,7 +90,10 @@ public class StudentServices {
             }
 
         } else {
+
+            // 🆕 CREATE NEW PROFILE
             String imageUrl = null;
+
             if (img != null && !img.isEmpty()) {
                 try {
                     imageUrl = supabaseStorageService.uploadImage(img);
@@ -112,27 +125,25 @@ public class StudentServices {
 
     @Transactional
     public StudentDetailsDTO getProfileData(String userId) throws Exception {
-        // Ensure studentDetails are eagerly loaded if UserDTO also needs names from here
         Student studentDetails = studentRepository.findById(userId)
                 .orElseThrow(() -> {
                     logger.warn("Student profile not found for user ID: {}", userId);
                     return new Exception("Student Profile not found for User ID: " + userId);
                 });
+
         return new StudentDetailsDTO(studentDetails);
     }
 
-    @Transactional()
+    @Transactional
     public Optional<Student> getProfileForStudent(String userId) {
-
         return studentRepository.findById(userId);
-
     }
 
-    @Transactional()
+    @Transactional
     public UserDTO getStudentProfileAsUserDTO(String userId) {
         Student studentDetails = studentRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for User ID: " + userId));
+
         return new UserDTO(studentDetails);
     }
-
 }
