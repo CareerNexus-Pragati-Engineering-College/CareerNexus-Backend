@@ -11,23 +11,21 @@ import com.CareerNexus_Backend.CareerNexus.repository.ApplicationRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 
 @Service
 public class ApplicationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -38,8 +36,8 @@ public class ApplicationService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
 
     @Transactional
     public ApplicationDTO applyForJob(Long jobId, String studentUserId, MultipartFile resumeFile) throws Exception {
@@ -66,21 +64,15 @@ public class ApplicationService {
         String resumeUrl = null;
         if (resumeFile != null && !resumeFile.isEmpty()) {
             try {
-
-                String originalFilename = resumeFile.getOriginalFilename();
-                String fileExtension = "";
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                }
-                String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
-                Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
-                Files.copy(resumeFile.getInputStream(),filePath);
-                resumeUrl = "/" + uniqueFileName;
+                logger.info("Uploading resume for student {} and job {}", studentUserId, jobId);
+                resumeUrl = supabaseStorageService.uploadResume(resumeFile, jobId.toString(), studentUserId);
+                logger.info("Resume uploaded successfully to Supabase for student {}", studentUserId);
             } catch (IOException e) {
-
-                throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
+                logger.error("Failed to upload resume for student {}: {}", studentUserId, e.getMessage());
+                throw new RuntimeException("Failed to store resume file in Supabase: " + e.getMessage(), e);
             }
         } else {
+            logger.warn("Resume file is missing for student application: {}", studentUserId);
             throw new IllegalArgumentException("Resume file is required for application.");
         }
         Application application = new Application(jobPost, student, resumeUrl);

@@ -9,19 +9,29 @@ import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.StudentRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import java.util.Optional;
 
 @Service
 public class StudentServices {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentServices.class);
+
     @Autowired
     private StudentRepository studentRepository;
 
     @Autowired
     private UserAuthRepository userAuthRepository;
+
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
 
     public boolean isStudentAvailable(UsersDTO user) {
         Optional<Student> isData = studentRepository.findByUserId(user.getUserId());
@@ -32,10 +42,13 @@ public class StudentServices {
     }
 
     @Transactional
-    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO, String userId) throws Exception {
+    public StudentDetailsDTO createOrUpdateProfile(StudentDetailsDTO studentDetailsDTO, String userId, MultipartFile img) throws Exception {
 
         User user = userAuthRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> {
+                    logger.warn("User not found with ID: {}", userId);
+                    return new ResourceNotFoundException("User not found with ID: " + userId);
+                });
 
 
         Optional<Student> studentDetail=this.getProfileForStudent(userId);
@@ -54,8 +67,30 @@ public class StudentServices {
             studentDetails.setSkills(studentDetailsDTO.getSkills());
             studentDetails.setEmail(studentDetailsDTO.getEmail());
 
+            if (img != null && !img.isEmpty()) {
+                try {
+                    String imageUrl = supabaseStorageService.uploadImage(img);
+                    supabaseStorageService.deleteImage(studentDetails.getImg_loc());
+                    studentDetails.setImg_loc(imageUrl);
+                    logger.info("Updated profile image for student: {} in Supabase", userId);
+                } catch (IOException e) {
+                    logger.error("Failed to update profile image for student: {} in Supabase. Error: {}", userId, e.getMessage());
+                    throw e;
+                }
+            }
+
         } else {
-System.out.println("welcome");
+            String imageUrl = null;
+            if (img != null && !img.isEmpty()) {
+                try {
+                    imageUrl = supabaseStorageService.uploadImage(img);
+                    logger.info("Saved new profile image for student: {} in Supabase", userId);
+                } catch (IOException e) {
+                    logger.error("Failed to save new profile image for student: {} in Supabase. Error: {}", userId, e.getMessage());
+                    throw e;
+                }
+            }
+
             studentDetails = new Student(
                     studentDetailsDTO.getSkills(),
                     studentDetailsDTO.getEmail(),
@@ -67,13 +102,10 @@ System.out.println("welcome");
                     studentDetailsDTO.getYear(),
                     studentDetailsDTO.getGraduationYear(),
                     studentDetailsDTO.getUrls(),
-                    user
+                    user,
+                    imageUrl
             );
-
-
-
         }
-
 
         return new StudentDetailsDTO(studentRepository.save(studentDetails));
     }
@@ -82,7 +114,10 @@ System.out.println("welcome");
     public StudentDetailsDTO getProfileData(String userId) throws Exception {
         // Ensure studentDetails are eagerly loaded if UserDTO also needs names from here
         Student studentDetails = studentRepository.findById(userId)
-                .orElseThrow(() -> new Exception("Student Profile not found for User ID: " + userId));
+                .orElseThrow(() -> {
+                    logger.warn("Student profile not found for user ID: {}", userId);
+                    return new Exception("Student Profile not found for User ID: " + userId);
+                });
         return new StudentDetailsDTO(studentDetails);
     }
 

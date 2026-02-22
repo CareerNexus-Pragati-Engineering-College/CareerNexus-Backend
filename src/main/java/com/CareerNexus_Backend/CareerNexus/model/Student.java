@@ -55,13 +55,16 @@ public class Student {
     @Column(name="urls")
     private String urls;
 
+    @Column(name = "img_loc")
+    private String img_loc;
+
     @Version
     private Long version;
 
     public Student() {
     }
 
-    public Student(String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls,User user) {
+    public Student(String skills, String email, String firstName, String lastName, String department, float CGPA, String phone, String year, String graduationYear, String urls,User user, String img_loc) {
         this.userId = user.getUserId();
         this.skills = skills;
         Email = email;
@@ -74,6 +77,7 @@ public class Student {
         GraduationYear = graduationYear;
         this.urls = urls;
         this.user=user;
+        this.img_loc = img_loc;
     }
 
 
@@ -171,5 +175,13 @@ public class Student {
 
     public void setUrls(String urls) {
         this.urls = urls;
+    }
+
+    public String getImg_loc() {
+        return img_loc;
+    }
+
+    public void setImg_loc(String img_loc) {
+        this.img_loc = img_loc;
     }
 }
