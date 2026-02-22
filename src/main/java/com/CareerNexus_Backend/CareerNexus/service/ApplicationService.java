@@ -117,7 +117,7 @@ public class ApplicationService {
                             round.getRoundName(),
                             round.getStartTime() != null ? round.getStartTime().toString() : "",
                             round.getEndTime() != null ? round.getEndTime().toString() : "",
-                            round.getId()
+                            round.getExamId()
                     );
                 } catch (Exception e) {
                     logger.error("Failed to send exam notification to late applicant {}", studentUserId, e);
