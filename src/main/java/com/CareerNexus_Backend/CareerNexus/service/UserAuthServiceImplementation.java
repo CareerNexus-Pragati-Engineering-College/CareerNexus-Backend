@@ -1,7 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
+// import com.CareerNexus_Backend.CareerNexus.dto.ChangePasswordDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
+// import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import com.CareerNexus_Backend.CareerNexus.security.JwtUtils;
@@ -41,66 +43,59 @@ public class UserAuthServiceImplementation implements UserAuthService {
     @Autowired
     private TpoService tpoService;
 
-    public UserAuthServiceImplementation(UserAuthRepository userAuthRepository, PasswordEncoder passwordEncoder) {
+    public UserAuthServiceImplementation(UserAuthRepository userAuthRepository,
+                                         PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
         this.userAuthRepository = userAuthRepository;
     }
 
+    // ── Register ──────────────────────────────────────────────────────────────
+
     public User registerUser(User user) {
-        // checks whether the student already or not if yes it send a exception to the
-        // user signup page
         Optional<User> existingStudent = userAuthRepository.findByUserId(user.getUserId());
         if (existingStudent.isPresent()) {
-            // Throw the custom exception to signal the conflict
             throw new DuplicateUserException(HttpStatus.CONFLICT.value(),
                     "User with userId '" + user.getUserId() + "' already exists.");
         }
         try {
-            // This line the raw password is encrypted using cryptographic techniques
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-            // User Signup details stored in db
             return userAuthRepository.save(user);
-
         } catch (Exception e) {
-            // Log the exception for debugging
             System.err.println("Error inserting user: " + e.getMessage());
-            // You might want to throw a more specific custom exception here,
-            // or return null/Optional.empty() depending on your error handling strategy.
             throw new RuntimeException("Failed to register user: " + e.getMessage(), e);
         }
     }
 
-    @Transactional()
+    // ── Login ─────────────────────────────────────────────────────────────────
+
+    @Transactional
     public ResponseEntity<Map<String, String>> login(UsersDTO user) {
         Authentication authentication;
         try {
             System.out.println("Authenticating user: " + user.getUserId());
 
-            // Authenticate user credentials
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUserId(), user.getPassword()));
+                    new UsernamePasswordAuthenticationToken(
+                            user.getUserId(), user.getPassword()));
 
-            String currentAuthenicateUserRole = authentication.getAuthorities().toString().substring(6);
+            String currentAuthenticateUserRole = authentication.getAuthorities()
+                    .toString().substring(6);
             Map<String, String> responseBody = new HashMap<>();
 
-            // Generate JWT token with role
-            String role = currentAuthenicateUserRole.substring(0, currentAuthenicateUserRole.length() - 1);
+            String role = currentAuthenticateUserRole.substring(0,
+                    currentAuthenticateUserRole.length() - 1);
             String token = jwtUtils.getToken(user.getUserId(), role);
-            // this validates whether current authenicating user has the correct access to
-            // their respected role
-            if (!currentAuthenicateUserRole.equals(user.getRole() + "]")) {
 
-                if (currentAuthenicateUserRole.equals("admin]") && user.getRole().equals("tpo")) {
+            if (!currentAuthenticateUserRole.equals(user.getRole() + "]")) {
+                if (currentAuthenticateUserRole.equals("admin]")
+                        && user.getRole().equals("tpo")) {
                     System.out.println("admin authenticated successfully..");
                     responseBody.put("token", token);
                     responseBody.put("router", "/admin");
                     responseBody.put("msg", "redirecting to admin portal");
                     responseBody.put("role", "admin");
-                    // Set the authentication in the security context
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     return ResponseEntity.status(200).body(responseBody);
-
                 } else {
                     Map<String, String> errorBody = new HashMap<>();
                     errorBody.put("error", "Login Failed");
@@ -109,53 +104,103 @@ public class UserAuthServiceImplementation implements UserAuthService {
                             .body(errorBody);
                 }
             }
-            // Set the authentication in the security context
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                    .toString().substring(6);
-            String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
+            String currentLoggedUserRole = SecurityContextHolder.getContext()
+                    .getAuthentication().getAuthorities().toString().substring(6);
+            String currentRole = currentLoggedUserRole.substring(0,
+                    currentLoggedUserRole.length() - 1);
 
             responseBody.put("token", token);
-            // Check if the current user is a 'student' and if they are available via
-            // studentServices.
-            if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+
+            if (currentRole.equals("student")
+                    && studentServices.isStudentAvailable(user)) {
+                responseBody.put("router", "/profile?page=data&userId="
+                        + user.getUserId() + "&email="
+                        + userAuthRepository.findByUserId(user.getUserId())
+                        .get().getEmail());
                 return ResponseEntity.status(200).body(responseBody);
-            }
-            // Else, check if the current user is a 'recruiter' and if they are available
-            // via recruiterProfileService.
-            else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
+            } else if (currentRole.equals("recruiter")
+                    && recruiterService.isRecruiterAvailable(user)) {
                 responseBody.put("msg", "redirecting to profile");
-
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-
+                responseBody.put("router", "/profile?page=data&userId="
+                        + user.getUserId() + "&email="
+                        + userAuthRepository.findByUserId(user.getUserId())
+                        .get().getEmail());
                 return ResponseEntity.status(200).body(responseBody);
-            }
-
-            else if (currentRole.equals("tpo") && tpoService.isTpoAvailable(user)) {
+            } else if (currentRole.equals("tpo")
+                    && tpoService.isTpoAvailable(user)) {
                 responseBody.put("msg", "redirecting to profile");
-
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-
+                responseBody.put("router", "/profile?page=data&userId="
+                        + user.getUserId() + "&email="
+                        + userAuthRepository.findByUserId(user.getUserId())
+                        .get().getEmail());
                 return ResponseEntity.status(200).body(responseBody);
             }
 
             responseBody.put("msg", "redirecting to Home...");
             responseBody.put("router", "/home");
             return ResponseEntity.status(200).body(responseBody);
+
         } catch (Exception e) {
             Map<String, String> errorBody = new HashMap<>();
             errorBody.put("error", "Login Failed");
             errorBody.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorBody);
-
         }
-
     }
 
+//    // ── Change Password ───────────────────────────────────────────────────────
+//
+//    @Transactional
+//    public ResponseEntity<Map<String, String>> changePassword(
+//            String userId, ChangePasswordDTO request) {
+//
+//        // Step 1 — Find the user
+//        User user = userAuthRepository.findByUserId(userId)
+//                .orElseThrow(() -> new ResourceNotFoundException(
+//                        "User not found with ID: " + userId));
+//
+//        // Step 2 — Verify current password is correct
+//        if (!passwordEncoder.matches(
+//                request.getCurrentPassword(), user.getPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error", "Current password is incorrect"));
+//        }
+//
+//        // Step 3 — New password and confirm password must match
+//        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password and confirm password do not match"));
+//        }
+//
+//        // Step 4 — New password must not be same as current password
+//        if (passwordEncoder.matches(
+//                request.getNewPassword(), user.getPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password cannot be the same as current password"));
+//        }
+//
+//        // Step 5 — Minimum length check
+//        if (request.getNewPassword().length() < 6) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password must be at least 6 characters"));
+//        }
+//
+//        // Step 6 — Encode and save
+//        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+//        userAuthRepository.save(user);
+//
+//        return ResponseEntity.ok(Map.of(
+//                "message", "Password changed successfully"));
+//    }
 }
