@@ -1,5 +1,6 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
+import com.CareerNexus_Backend.CareerNexus.config.FirebaseConfig;
 import com.CareerNexus_Backend.CareerNexus.dto.ApplicationDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
@@ -36,6 +37,9 @@ public class ApplicationService {
 
     // ── Apply For Job ─────────────────────────────────────────────────────────
 
+    @Autowired
+    private FirebaseConfig firebaseConfig;
+
     @Transactional
     public ApplicationDTO applyForJob(Long jobId, String studentUserId,
                                       MultipartFile resumeFile) throws Exception {
@@ -64,10 +68,28 @@ public class ApplicationService {
                     "Student has already applied for this job.");
         }
 
-        // Resume is required
-        if (resumeFile == null || resumeFile.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Resume file is required for application.");
+
+        String resumeUrl = null;
+        if (resumeFile != null && !resumeFile.isEmpty()) {
+            try {
+
+                String originalFilename = resumeFile.getOriginalFilename();
+                String fileExtension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String uniqueFileName = jobId+"__"+studentUserId+"__"+UUID.randomUUID().toString() + "__"+ fileExtension;
+
+
+                resumeUrl = firebaseConfig.uploadFile(resumeFile,uniqueFileName,"resumes");
+            System.out.println(resumeUrl);
+
+            } catch (IOException e) {
+
+                throw new RuntimeException("Failed to store resume file: " + e.getMessage(), e);
+            }
+        } else {
+            throw new IllegalArgumentException("Resume file is required for application.");
         }
 
         // Validate resume is PDF
@@ -160,5 +182,22 @@ public class ApplicationService {
 
     public JobApplicationCountDTO getCountApplicationByStudent(String userId) {
         return applicationRepository.findCount(userId);
+    }
+
+
+
+    public void updateApplicationByJobIdAndUserId(String userId, Long jobId, int minMarks, int marks) {
+        Optional<User> student=userAuthRepository.findById(userId);
+        System.out.println("updating Student Application Form"+" "+minMarks);
+        Application application=applicationRepository.findByJobPost_IdAndStudent_UserId(jobId,userId).get();
+        if(marks>=minMarks){
+            application.setStatus("In progress");
+        }
+        else{
+            application.setStatus("Rejected");
+        }
+
+        applicationRepository.save(application);
+
     }
 }
