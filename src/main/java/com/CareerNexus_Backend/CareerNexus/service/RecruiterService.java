@@ -9,31 +9,30 @@ import com.CareerNexus_Backend.CareerNexus.model.Recruiter; // Corrected import
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository; // Assuming this is your repo name
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository; // Assuming you use UserRepository for User entity
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Import Spring's Transactional
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Service
 public class RecruiterService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RecruiterService.class);
 
     @Autowired
     private RecruiterRepository recruiterDetailsRepository;
 
     @Autowired
     private UserAuthRepository userRepository;
+
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
 
     public boolean isRecruiterAvailable(UsersDTO user){
         Optional<Recruiter> isData=recruiterDetailsRepository.findByUserId(user.getUserId());
@@ -42,12 +41,13 @@ public class RecruiterService {
         }
         return false;
     }
-    @Value("${file.img.upload-dir}")
-    private String uploadDir;
     @Transactional
     public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO, MultipartFile img) throws IOException {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> {
+                    logger.warn("User not found with ID: {}", userId);
+                    return new ResourceNotFoundException("User not found with ID: " + userId);
+                });
 
         Optional<Recruiter> recruiterDetail=this.getProfileForRecruiter(userId);
 
@@ -61,29 +61,39 @@ public class RecruiterService {
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
             recruiterDetails.setDesignation(recruiterDetailsDTO.getDesignation());
             recruiterDetails.setPhone(recruiterDetailsDTO.getPhone());
-            Files.copy(img.getInputStream(), Paths.get(uploadDir).resolve(recruiterDetails.getImg_loc().substring(1)),REPLACE_EXISTING);
+            try {
+                // Upload new image to Supabase
+                String imageUrl = supabaseStorageService.uploadImage(img);
+                
+                // Optionally delete old image if it's a Supabase URL
+                supabaseStorageService.deleteImage(recruiterDetails.getImg_loc());
+                
+                recruiterDetails.setImg_loc(imageUrl);
+                logger.info("Updated profile image for recruiter: {} in Supabase", userId);
+            } catch (IOException e) {
+                logger.error("Failed to update profile image for recruiter: {} in Supabase. Error: {}", userId, e.getMessage());
+                throw e;
+            }
 
         } else {
-            String originalFilename = img.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            try {
+                String imageUrl = supabaseStorageService.uploadImage(img);
+                logger.info("Saved new profile image for recruiter: {} in Supabase", userId);
+
+                recruiterDetails = new Recruiter(
+                        user,
+                        recruiterDetailsDTO.getEmail(),
+                        recruiterDetailsDTO.getFirstName(),
+                        recruiterDetailsDTO.getLastName(),
+                        recruiterDetailsDTO.getCompany(),
+                        recruiterDetailsDTO.getDesignation(),
+                        recruiterDetailsDTO.getPhone(),
+                        imageUrl
+                );
+            } catch (IOException e) {
+                logger.error("Failed to save new profile image for recruiter: {} in Supabase. Error: {}", userId, e.getMessage());
+                throw e;
             }
-            String uniqueFileName =  UUID.randomUUID().toString() + "__"+ fileExtension;
-            Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
-            Files.copy(img.getInputStream(), filePath);
-
-            recruiterDetails = new Recruiter(
-                    user,
-                    recruiterDetailsDTO.getEmail(),
-                    recruiterDetailsDTO.getFirstName(),
-                    recruiterDetailsDTO.getLastName(),
-                    recruiterDetailsDTO.getCompany(),
-                    recruiterDetailsDTO.getDesignation(),
-                    recruiterDetailsDTO.getPhone(),
-                    "/"+uniqueFileName
-            );
-
 
         }
 
@@ -93,7 +103,10 @@ public class RecruiterService {
     @Transactional(readOnly = true) // Read-only transaction for fetching data
     public RecruiterDetailsDTO getProfileData(String userId) throws Exception { // userId is Long
         Recruiter recruiterDetails = recruiterDetailsRepository.findById(userId)
-                .orElseThrow(() -> new Exception("Recruiter Profile not found for User ID: " + userId));
+                .orElseThrow(() -> {
+                    logger.warn("Recruiter profile not found for user ID: {}", userId);
+                    return new Exception("Recruiter Profile not found for User ID: " + userId);
+                });
         return new RecruiterDetailsDTO(recruiterDetails);
     }
 
