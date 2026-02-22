@@ -1,6 +1,5 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
-//import com.CareerNexus_Backend.CareerNexus.config.FirebaseConfig;
 import com.CareerNexus_Backend.CareerNexus.dto.RecruiterDetailsDTO;
 
 import com.CareerNexus_Backend.CareerNexus.dto.UserDTO;
@@ -36,9 +35,6 @@ public class RecruiterService {
     @Autowired
     private UserAuthRepository userRepository;
 
-//    @Autowired
-//    private FirebaseConfig firebaseConfig;
-
     public boolean isRecruiterAvailable(UsersDTO user){
         Optional<Recruiter> isData=recruiterDetailsRepository.findByUserId(user.getUserId());
         if(isData.isEmpty()){
@@ -65,6 +61,7 @@ public class RecruiterService {
             recruiterDetails.setCompany(recruiterDetailsDTO.getCompany());
             recruiterDetails.setDesignation(recruiterDetailsDTO.getDesignation());
             recruiterDetails.setPhone(recruiterDetailsDTO.getPhone());
+            Files.copy(img.getInputStream(), Paths.get(uploadDir).resolve(recruiterDetails.getImg_loc().substring(1)),REPLACE_EXISTING);
 
         } else {
             String originalFilename = img.getOriginalFilename();
@@ -73,7 +70,8 @@ public class RecruiterService {
                 fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
             String uniqueFileName =  UUID.randomUUID().toString() + "__"+ fileExtension;
-
+            Path filePath = Paths.get(uploadDir).resolve(uniqueFileName);
+            Files.copy(img.getInputStream(), filePath);
 
             recruiterDetails = new Recruiter(
                     user,
@@ -83,8 +81,7 @@ public class RecruiterService {
                     recruiterDetailsDTO.getCompany(),
                     recruiterDetailsDTO.getDesignation(),
                     recruiterDetailsDTO.getPhone(),
-                    firebaseConfig.uploadFile(img,uniqueFileName,"images")
-
+                    "/"+uniqueFileName
             );
 
 
