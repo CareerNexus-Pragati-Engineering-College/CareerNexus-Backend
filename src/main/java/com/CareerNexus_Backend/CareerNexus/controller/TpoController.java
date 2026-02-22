@@ -7,6 +7,7 @@ import com.CareerNexus_Backend.CareerNexus.dto.TpoDetailsDTO;
 import com.CareerNexus_Backend.CareerNexus.service.TpoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -17,14 +18,14 @@ public class TpoController {
     @Autowired
     private TpoService tpoService;
 
-    @PostMapping("/{userId}/profile")
-    public TpoDetailsDTO Profile(@RequestBody TpoDetailsDTO TpoDetails, @PathVariable String userId) throws Exception {
-        return tpoService.createOrUpdateProfile(userId, TpoDetails);
+    @PostMapping("/profile")
+    public TpoDetailsDTO Profile(@RequestBody TpoDetailsDTO TpoDetails, Authentication authentication) throws Exception {
+        return tpoService.createOrUpdateProfile(authentication.getName(), TpoDetails);
     }
 
-    @GetMapping("/{userId}/profile")
-    public TpoDetailsDTO Profile(@PathVariable String userId) throws Exception {
-        return tpoService.getProfileData(userId);
+    @GetMapping("/profile")
+    public TpoDetailsDTO Profile(Authentication authentication) throws Exception {
+        return tpoService.getProfileData(authentication.getName());
     }
 
     @GetMapping("student/get-profile-links/{year}/{department}")

@@ -115,10 +115,14 @@ public class AssessmentService {
                 assessmentRoundDto.getEndTime(),
                 LocalDateTime.now()
         );
-        assessmentRepository.save(assessmentRound);
-
-        assessmentNotificationService.notifyRegisteredStudents(jobPost.getId(),jobPost.getJobTitle(),  assessmentRoundDto.getRoundName(),assessmentRoundDto.getStartTime().toString(),assessmentRoundDto.getEndTime().toString() );
-
+        assessmentNotificationService.notifyRegisteredStudents(
+                jobPost.getId(),
+                jobPost.getJobTitle(),
+                assessmentRoundDto.getRoundName(),
+                assessmentRoundDto.getStartTime().toString(),
+                assessmentRoundDto.getEndTime().toString(),
+                assessmentRound.getId() // pass the newly created assessment ID
+        );
 
         return ResponseEntity.ok("Round Configured Successfully...");
 

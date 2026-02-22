@@ -29,32 +29,22 @@ public class StudentController {
     @Autowired
     private RecruiterService recruiterService;
 
-    @PostMapping("/{userId}/profile")
-    public ResponseEntity<StudentDetailsDTO> Profile(@RequestPart("data") StudentDetailsDTO studentDetailsDTO, @RequestPart("imageFile") MultipartFile img, @PathVariable String userId, Authentication authentication) {
+    @PostMapping("/profile")
+    public ResponseEntity<StudentDetailsDTO> Profile(@RequestPart("data") StudentDetailsDTO studentDetailsDTO, @RequestPart("imageFile") MultipartFile img, Authentication authentication) {
         try {
-
-            String authenicatedUserName=authentication.getName();
-
-            if(!authenicatedUserName.equals(userId)){
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-
+            String userId = authentication.getName();
             StudentDetailsDTO createdOrUpdatedProfile = studentServices.createOrUpdateProfile(studentDetailsDTO, userId, img);
             return new ResponseEntity<>(createdOrUpdatedProfile, HttpStatus.CREATED);
         } catch (Exception e) {
-            log.error("Error creating/updating student profile for user: {}", userId, e);
+            log.error("Error creating/updating student profile for user: {}", authentication.getName(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping("/{userId}/profile")
-        public ResponseEntity<StudentDetailsDTO> getStudentProfile (@PathVariable String userId,Authentication authentication)
+        @GetMapping("/profile")
+        public ResponseEntity<StudentDetailsDTO> getStudentProfile (Authentication authentication)
         {
-            String authenicatedUserName=authentication.getName();
-
-            if(!authenicatedUserName.equals(userId)){
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
+            String userId = authentication.getName();
             try {
                 StudentDetailsDTO profileData = studentServices.getProfileData(userId);
                 return ResponseEntity.ok(profileData);

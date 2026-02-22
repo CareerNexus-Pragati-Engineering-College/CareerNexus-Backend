@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("api/recruiter")
@@ -17,14 +18,16 @@ public class RecruiterController {
     @Autowired
     private RecruiterService recruiterService;
 
-    @PostMapping("/{userId}/profile")
-    public RecruiterDetailsDTO Profile( @RequestPart("imageFile") MultipartFile img,@RequestPart("data") RecruiterDetailsDTO RecruiterDetails, @PathVariable String userId) throws Exception {
+    @PostMapping("/profile")
+    public RecruiterDetailsDTO Profile( @RequestPart("imageFile") MultipartFile img,@RequestPart("data") RecruiterDetailsDTO RecruiterDetails, Authentication authentication) throws Exception {
+        String userId = authentication.getName();
         logger.info("Received request to create/update profile for recruiter: {}", userId);
         return recruiterService.createOrUpdateProfile(userId,RecruiterDetails,img);
     }
 
-    @GetMapping("/{userId}/profile")
-    public RecruiterDetailsDTO Profile(@PathVariable String userId) throws Exception {
+    @GetMapping("/profile")
+    public RecruiterDetailsDTO Profile(Authentication authentication) throws Exception {
+        String userId = authentication.getName();
         logger.info("Received request to fetch profile for recruiter: {}", userId);
         return recruiterService.getProfileData(userId);
     }

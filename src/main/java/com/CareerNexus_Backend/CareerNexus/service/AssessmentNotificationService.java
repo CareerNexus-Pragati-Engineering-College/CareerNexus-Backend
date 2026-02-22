@@ -19,7 +19,7 @@ public class AssessmentNotificationService {
      * This is the "Next Step" logic.
      * Call this method after saving your encrypted questions.
      */
-    public void notifyRegisteredStudents(Long jobId,String jobTitle, String roundName, String startTime, String endTime) {
+    public void notifyRegisteredStudents(Long jobId,String jobTitle, String roundName, String startTime, String endTime, Long assessmentId) {
         // 1. Find all students who applied for this job
         List<User> students = jobApplicationRepository.findStudentsByJobId(jobId);
 
@@ -28,13 +28,32 @@ public class AssessmentNotificationService {
             emailService.sendExamInvite(
                     student.getEmail(),
                     student.getUserId(),
+                    student.getUserId(), // Assuming student name is not separate, otherwise pass it
                     jobTitle,
                     roundName,
                     startTime,
-                    endTime
+                    endTime,
+                    assessmentId
             );
         }
 
         System.out.println("Dispatched " + students.size() + " notifications for Job ID: " + jobId);
+    }
+
+    /**
+     * Dispatch an exam invite to a single student (e.g., a late applicant).
+     */
+    public void notifySingleStudent(User student, String jobTitle, String roundName, String startTime, String endTime, Long assessmentId) {
+        emailService.sendExamInvite(
+                student.getEmail(),
+                student.getUserId(),
+                student.getUserId(),
+                jobTitle,
+                roundName,
+                startTime,
+                endTime,
+                assessmentId
+        );
+        System.out.println("Dispatched late-applicant exam notification to: " + student.getEmail());
     }
 }

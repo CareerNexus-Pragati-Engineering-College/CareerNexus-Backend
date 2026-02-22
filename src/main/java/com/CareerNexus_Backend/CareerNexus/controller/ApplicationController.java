@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -22,8 +23,9 @@ public class ApplicationController {
     @Autowired
     private ApplicationService applicationService;
 
-    @PostMapping(path = "/apply/{userId}/{jobId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApplicationDTO> applyForJob(@PathVariable Long jobId, @PathVariable String userId, @RequestPart("resumeFile") MultipartFile resumeFile) throws Exception {
+    @PostMapping(path = "/apply/{jobId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApplicationDTO> applyForJob(@PathVariable Long jobId, @RequestPart("resumeFile") MultipartFile resumeFile, Authentication authentication) throws Exception {
+        String userId = authentication.getName();
         ApplicationDTO createdApplication = applicationService.applyForJob(jobId, userId,resumeFile);
         return new ResponseEntity<>(createdApplication, HttpStatus.CREATED);
     }
@@ -31,9 +33,10 @@ public class ApplicationController {
 
 
 
-    @GetMapping("/my-applications/{userId}")
-    public ResponseEntity<List<ApplicationDTO>> getMyApplications(@PathVariable String userId) {
+    @GetMapping("/my-applications")
+    public ResponseEntity<List<ApplicationDTO>> getMyApplications(Authentication authentication) {
         try {
+            String userId = authentication.getName();
             List<ApplicationDTO> applications = applicationService.getApplicationsByStudent(userId);
             return ResponseEntity.ok(applications);
         } catch (Exception e) {
@@ -74,8 +77,9 @@ public class ApplicationController {
         return applicationService.getStudentApplicationsForJobId(id);
     }
 
-    @GetMapping("student/apply/count/{userId}")
-    public  JobApplicationCountDTO studentApplicationCount(@PathVariable String userId){
+    @GetMapping("student/apply/count")
+    public  JobApplicationCountDTO studentApplicationCount(Authentication authentication){
+        String userId = authentication.getName();
         return applicationService.getCountApplicationByStudent(userId);
     }
 }

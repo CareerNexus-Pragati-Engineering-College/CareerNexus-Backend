@@ -5,9 +5,11 @@ import com.CareerNexus_Backend.CareerNexus.dto.JobApplicationCountDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentsApplicationsDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.Application;
+import com.CareerNexus_Backend.CareerNexus.dto.AssessmentRoundDto;
 import com.CareerNexus_Backend.CareerNexus.model.JobPost;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.ApplicationRepository;
+import com.CareerNexus_Backend.CareerNexus.repository.AssessmentRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import jakarta.transaction.Transactional;
@@ -38,6 +40,15 @@ public class ApplicationService {
 
     @Autowired
     private SupabaseStorageService supabaseStorageService;
+
+    @Autowired
+    private AssessmentRepository assessmentRepository;
+
+    @Autowired
+    private AssessmentNotificationService assessmentNotificationService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
     public ApplicationDTO applyForJob(Long jobId, String studentUserId, MultipartFile resumeFile) throws Exception {
@@ -76,7 +87,46 @@ public class ApplicationService {
             throw new IllegalArgumentException("Resume file is required for application.");
         }
         Application application = new Application(jobPost, student, resumeUrl);
-        return new ApplicationDTO(applicationRepository.save(application));
+        Application savedApplication = applicationRepository.save(application);
+
+        // --- APPLICATION CONFIRMATION EMAIL ---
+        try {
+            emailService.sendApplicationConfirmationEmail(
+                    student.getEmail(),
+                    student.getUserId(),
+                    jobPost.getCompanyName(),
+                    jobPost.getJobTitle(),
+                    jobPost.getLocations()
+            );
+        } catch (Exception e) {
+            logger.error("Failed to send application confirmation email to {}", student.getEmail(), e);
+            // Non-blocking error
+        }
+
+        // --- LATE APPLICANT EXAM NOTIFICATION ---
+        // Check if there are any assessment rounds already configured for this job post.
+        List<AssessmentRoundDto> rounds = assessmentRepository.findConfigurationByJobId(jobId);
+        
+        // If there are rounds, immediately dispatch an exam invite to the new student.
+        if (rounds != null && !rounds.isEmpty()) {
+            for (AssessmentRoundDto round : rounds) {
+                try {
+                    assessmentNotificationService.notifySingleStudent(
+                            student,
+                            jobPost.getJobTitle(),
+                            round.getRoundName(),
+                            round.getStartTime() != null ? round.getStartTime().toString() : "",
+                            round.getEndTime() != null ? round.getEndTime().toString() : "",
+                            round.getId()
+                    );
+                } catch (Exception e) {
+                    logger.error("Failed to send exam notification to late applicant {}", studentUserId, e);
+                    // We don't want to fail the actual job application just because the email failed.
+                }
+            }
+        }
+
+        return new ApplicationDTO(savedApplication);
     }
 
     @Transactional()
