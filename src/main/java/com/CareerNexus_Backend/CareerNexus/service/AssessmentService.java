@@ -23,9 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AssessmentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AssessmentService.class);
 
     @Autowired
     private UserAuthRepository userAuthRepository;
@@ -79,9 +83,9 @@ public class AssessmentService {
         String response = null;
         try {
             FileSystemResource fileResource = new FileSystemResource(pdfFile);
-            System.out.println("requesting Gemini model to extract data from pdf...");
+            logger.info("Requesting Gemini model to extract data from pdf for job ID: {}", assessmentRoundDto.getJobPostId());
             response = questionExtractionService.extractQuestionsFromFile(fileResource);
-            System.out.println(response);
+            logger.debug("Gemini response: {}", response);
         } finally {
             // Ensure temporary file is always deleted
             Files.deleteIfExists(pdfFilePath);
@@ -129,7 +133,7 @@ public class AssessmentService {
     }
 
     public List<AssessmentRoundDto> getAssessmentConfigurationData(String recruiterId, Long jobId) {
-        System.out.println(recruiterId);
+        logger.info("Fetching assessment configuration for recruiter: {} and job ID: {}", recruiterId, jobId);
         return assessmentRepository.findAssessmentRoundsByJobId(jobId);
     }
 
@@ -145,23 +149,25 @@ public class AssessmentService {
 
     public StudentExamDTO getQuestionsForStudent(Long assessmentId) throws Exception {
         // 1. Fetch from DB
-        Optional<AssessmentRound> assessment = assessmentRepository.findById(assessmentId);
+        AssessmentRound assessment = assessmentRepository.findById(assessmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment Round not found with ID: " + assessmentId));
 
         // 2. Security Check: Is the exam active?
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(assessment.get().getStartTime())) {
+        if (now.isBefore(assessment.getStartTime())) {
+            logger.warn("User attempted to start exam too early. Assessment ID: {}", assessmentId);
             throw new RuntimeException("Exam has not started yet.");
         }
-        if (now.isAfter(assessment.get().getEndTime())) {
+        if (now.isAfter(assessment.getEndTime())) {
+            logger.warn("User attempted to start exam after deadline. Assessment ID: {}", assessmentId);
             throw new RuntimeException("Exam window has closed.");
         }
 
 
         // 3. Decrypt the questions from the secure storage
-        // Note: encryptionService.decrypt expects (data, key)
         String decryptedJson = encryptionService.decrypt(
-                assessment.get().getEncryptedQuestions(),
-                assessment.get().getEncryptionKey()
+                assessment.getEncryptedQuestions(),
+                assessment.getEncryptionKey()
         );
 
         // 4. Use TypeReference to parse the JSON Array [...]
@@ -183,24 +189,24 @@ public class AssessmentService {
                 .collect(Collectors.toList());
 
         // Log for verification
-        System.out.println("Questions dispatched for assessment " + assessmentId + ": " + questionsOnly.size() + " items.");
+        logger.info("Questions dispatched for assessment {}: {} items.", assessmentId, questionsOnly.size());
 
-        // 6. FIX: Wrap the list into a StudentExamDto object to prevent ClassCastException
-        StudentExamDTO response=new StudentExamDTO();
+        // 6. FIX: Wrap the list into a StudentExamDto object
+        StudentExamDTO response = new StudentExamDTO();
 
-        response.setAssessmentId(assessment.get().getId());
-        response.setRoundName(assessment.get().getRoundName());
+        response.setAssessmentId(assessment.getId());
+        response.setRoundName(assessment.getRoundName());
         response.setQuestions(questionsOnly);
-        response.setEndTime(assessment.get().getEndTime());
+        response.setEndTime(assessment.getEndTime());
 
         return response;
     }
 
 
     @Transactional
-    public StudentExamAttempt processSubmission(Long assessmentId, String student, List<StudentAnswerSubmissionDto> studentAnswers) throws Exception {
-        User user = userAuthRepository.findById(student)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " ));
+    public StudentExamAttempt processSubmission(Long assessmentId, String studentUserId, List<StudentAnswerSubmissionDto> studentAnswers) throws Exception {
+        User user = userAuthRepository.findById(studentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + studentUserId));
 
         AssessmentRound assessment = assessmentRepository.findById(assessmentId)
                 .orElseThrow(() -> new RuntimeException("Assessment not found"));

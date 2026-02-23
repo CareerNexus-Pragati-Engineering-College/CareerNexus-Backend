@@ -4,6 +4,8 @@ import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.ApplicationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @Service
@@ -14,6 +16,8 @@ public class AssessmentNotificationService {
 
     @Autowired
     private EmailService emailService;
+
+    private static final Logger logger = LoggerFactory.getLogger(AssessmentNotificationService.class);
 
     /**
      * This is the "Next Step" logic.
@@ -37,7 +41,7 @@ public class AssessmentNotificationService {
             );
         }
 
-        System.out.println("Dispatched " + students.size() + " notifications for Job ID: " + jobId);
+        logger.info("Dispatched {} notifications for Job ID: {}", students.size(), jobId);
     }
 
     /**
@@ -54,6 +58,6 @@ public class AssessmentNotificationService {
                 endTime,
                 assessmentId
         );
-        System.out.println("Dispatched late-applicant exam notification to: " + student.getEmail());
+        logger.info("Dispatched late-applicant exam notification to: {}", student.getEmail());
     }
 }

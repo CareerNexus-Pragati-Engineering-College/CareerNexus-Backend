@@ -15,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +43,8 @@ public class UserAuthServiceImplementation implements UserAuthService {
     @Autowired
     private TpoService tpoService;
 
+    private static final Logger logger = LoggerFactory.getLogger(UserAuthServiceImplementation.class);
+
     public UserAuthServiceImplementation(UserAuthRepository userAuthRepository, PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
         this.userAuthRepository = userAuthRepository;
@@ -64,94 +68,92 @@ public class UserAuthServiceImplementation implements UserAuthService {
 
         } catch (Exception e) {
             // Log the exception for debugging
-            System.err.println("Error inserting user: " + e.getMessage());
-            // You might want to throw a more specific custom exception here,
-            // or return null/Optional.empty() depending on your error handling strategy.
+            logger.error("Error inserting user: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to register user: " + e.getMessage(), e);
         }
     }
 
     @Transactional()
     public ResponseEntity<Map<String, String>> login(UsersDTO user) {
-        Authentication authentication;
         try {
-            System.out.println("Authenticating user: " + user.getUserId());
+            logger.info("Authenticating user: {}", user.getUserId());
 
             // Authenticate user credentials
-            authentication = authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUserId(), user.getPassword()));
 
-            String currentAuthenicateUserRole = authentication.getAuthorities().toString().substring(6);
+            // Extract role safely from authorities
+            String authenticatedRole = authentication.getAuthorities().stream()
+                    .map(grantedAuthority -> grantedAuthority.getAuthority())
+                    .map(auth -> auth.startsWith("ROLE_") ? auth.substring(5) : auth)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No roles assigned to user"));
+
             Map<String, String> responseBody = new HashMap<>();
 
-            // Generate JWT token with role
-            String role = currentAuthenicateUserRole.substring(0, currentAuthenicateUserRole.length() - 1);
-            String token = jwtUtils.getToken(user.getUserId(), role);
-            // this validates whether current authenicating user has the correct access to
-            // their respected role
-            if (!currentAuthenicateUserRole.equals(user.getRole() + "]")) {
-
-                if (currentAuthenicateUserRole.equals("admin]") && user.getRole().equals("tpo")) {
-                    System.out.println("admin authenticated successfully..");
-                    responseBody.put("token", token);
-                    responseBody.put("router", "/admin");
-                    responseBody.put("msg", "redirecting to admin portal");
-                    responseBody.put("role", "admin");
-                    // Set the authentication in the security context
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    return ResponseEntity.status(200).body(responseBody);
-
+            // Security check: ensure the requested role matches the authenticated role
+            if (!authenticatedRole.equalsIgnoreCase(user.getRole())) {
+                // Special case: Admin can log into TPO flow
+                if (authenticatedRole.equalsIgnoreCase("admin") && user.getRole().equalsIgnoreCase("tpo")) {
+                    logger.info("Admin authenticated successfully for TPO flow.");
                 } else {
+                    logger.warn("Unauthorized access attempt: User {} (Role: {}) tried to log in as {}", 
+                            user.getUserId(), authenticatedRole, user.getRole());
                     Map<String, String> errorBody = new HashMap<>();
                     errorBody.put("error", "Login Failed");
                     errorBody.put("message", "Unauthorized Access");
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(errorBody);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
                 }
             }
+
+            // Generate JWT token
+            String token = jwtUtils.getToken(user.getUserId(), authenticatedRole);
+            
             // Set the authentication in the security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String currentLoggedUserRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                    .toString().substring(6);
-            String currentRole = currentLoggedUserRole.substring(0, currentLoggedUserRole.length() - 1);
-
+            String currentRole = authenticatedRole.toLowerCase();
             responseBody.put("token", token);
-            // Check if the current user is a 'student' and if they are available via
-            // studentServices.
-            if (currentRole.equals("student") && studentServices.isStudentAvailable(user)) {
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-                return ResponseEntity.status(200).body(responseBody);
-            }
-            // Else, check if the current user is a 'recruiter' and if they are available
-            // via recruiterProfileService.
-            else if (currentRole.equals("recruiter") && recruiterService.isRecruiterAvailable(user)) {
-                responseBody.put("msg", "redirecting to profile");
+            responseBody.put("role", currentRole);
 
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
+            // Fetch user email safely
+            String userEmail = userAuthRepository.findByUserId(user.getUserId())
+                    .map(User::getEmail)
+                    .orElse("");
 
-                return ResponseEntity.status(200).body(responseBody);
+            // Redirection logic
+            if (currentRole.equals("admin")) {
+                responseBody.put("router", "/admin");
+                responseBody.put("msg", "redirecting to admin portal");
+                return ResponseEntity.ok(responseBody);
             }
 
-            else if (currentRole.equals("tpo") && tpoService.isTpoAvailable(user)) {
+            // Check if the current user is a 'student' and if they are missing a profile.
+            if (currentRole.equals("student") && studentServices.isProfileMissing(user)) {
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userEmail);
+                return ResponseEntity.ok(responseBody);
+            }
+            // Else, check if the current user is a 'recruiter' and if they are missing a profile.
+            else if (currentRole.equals("recruiter") && recruiterService.isProfileMissing(user)) {
                 responseBody.put("msg", "redirecting to profile");
-
-                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email="
-                        + userAuthRepository.findByUserId(user.getUserId()).get().getEmail());
-
-                return ResponseEntity.status(200).body(responseBody);
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userEmail);
+                return ResponseEntity.ok(responseBody);
+            }
+            else if (currentRole.equals("tpo") && tpoService.isProfileMissing(user)) {
+                responseBody.put("msg", "redirecting to profile");
+                responseBody.put("router", "/profile?page=data&userId=" + user.getUserId() + "&email=" + userEmail);
+                return ResponseEntity.ok(responseBody);
             }
 
             responseBody.put("msg", "redirecting to Home...");
             responseBody.put("router", "/home");
             return ResponseEntity.status(200).body(responseBody);
         } catch (Exception e) {
+            logger.error("Authentication failed for user: {}. Error: {}", user.getUserId(), e.getMessage());
             Map<String, String> errorBody = new HashMap<>();
             errorBody.put("error", "Login Failed");
             errorBody.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(errorBody);
 
         }
