@@ -61,6 +61,9 @@ public class AssessmentService {
     private StudentExamAttemptRepository studentExamAttempt;
 
     @Autowired
+    private CodingAssessmentResultRepository codingAssessmentResultRepository;
+
+    @Autowired
     private CodingAssessmentRepository codingAssessmentRepository;
 
     @org.springframework.beans.factory.annotation.Value("${file.upload-assessment-files}")
@@ -153,6 +156,12 @@ public class AssessmentService {
             round.setMin_marks(0);
             round.setType("MCQ");
             round.setExamUrl("/student/" + studentId + "/test/" + round.getExamId());
+            // Check if student already attempted this MCQ round
+            User user = userAuthRepository.findById(studentId).orElse(null);
+            AssessmentRound ar = assessmentRepository.findById(round.getExamId()).orElse(null);
+            if (user != null && ar != null) {
+                round.setAttempted(studentExamAttempt.findByStudentAndAssessmentRound(user, ar).isPresent());
+            }
         });
 
         // 2. Get Coding Assessments
@@ -166,6 +175,8 @@ public class AssessmentService {
             dto.setMin_marks(ar.getMinMarks() != null ? ar.getMinMarks() : 0);
             dto.setType("CODING");
             dto.setExamUrl("/student/" + studentId + "/coding-assessment/" + ar.getId());
+            // Check if student already attempted this Coding round
+            dto.setAttempted(codingAssessmentResultRepository.findByStudent_UserIdAndAssessment_Id(studentId, ar.getId()).isPresent());
             return dto;
         }).collect(Collectors.toList());
 
@@ -176,12 +187,19 @@ public class AssessmentService {
         return mcqRounds;
     }
 
-    public StudentExamDTO getQuestionsForStudent(Long assessmentId) throws Exception {
+    public StudentExamDTO getQuestionsForStudent(Long assessmentId, String studentId) throws Exception {
         // 1. Fetch from DB
         AssessmentRound assessment = assessmentRepository.findById(assessmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assessment Round not found with ID: " + assessmentId));
 
-        // 2. Security Check: Is the exam active?
+        // 2. Check for existing attempt
+        User user = userAuthRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + studentId));
+        if (studentExamAttempt.findByStudentAndAssessmentRound(user, assessment).isPresent()) {
+            throw new RuntimeException("Access Denied: You have already submitted this assessment.");
+        }
+
+        // 3. Security Check: Is the exam active?
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(assessment.getStartTime())) {
             logger.warn("User attempted to start exam too early. Assessment ID: {}", assessmentId);
@@ -263,7 +281,13 @@ public class AssessmentService {
 
         // 2. Evaluation Logic
         int score = 0;
+        logger.info("Evaluating submission for assessment {}. Submitted answers count: {}", assessmentId, studentAnswers.size());
+
         for (StudentAnswerSubmissionDto sub : studentAnswers) {
+            if (sub == null || sub.getQueNo() <= 0 || sub.getOption() == null) {
+                logger.warn("Skipping invalid answer submission: {}", sub);
+                continue;
+            }
             String correct = truthMap.get(String.valueOf(sub.getQueNo()));
             if (correct != null && correct.trim().equalsIgnoreCase(sub.getOption().trim())) {
                 score++;

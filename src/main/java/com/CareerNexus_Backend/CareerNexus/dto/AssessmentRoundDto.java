@@ -12,6 +12,7 @@ public class AssessmentRoundDto {
     private int min_marks;
     private String examUrl;
     private String type; // MCQ or CODING
+    private boolean attempted;
 
 
 
@@ -108,5 +109,13 @@ public class AssessmentRoundDto {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public boolean isAttempted() {
+        return attempted;
+    }
+
+    public void setAttempted(boolean attempted) {
+        this.attempted = attempted;
     }
 }

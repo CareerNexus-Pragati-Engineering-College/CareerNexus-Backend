@@ -134,9 +134,13 @@ public class CodingAssessmentService {
                 .findByStudent_UserIdAndAssessment_Id(studentId, assessmentId)
                 .orElse(null);
 
-        Boolean solved = result != null;
-        Integer totalScore = result != null ? result.getTotalScore() : null;
-        Integer maxScore = result != null ? result.getMaxScore() : null;
+        if (result != null) {
+            throw new RuntimeException("Access Denied: You have already submitted this assessment.");
+        }
+
+        Boolean solved = false;
+        Integer totalScore = null;
+        Integer maxScore = null;
 
         return new StudentCodingAssessmentDto(
                 assessment.getId(),

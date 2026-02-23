@@ -63,19 +63,23 @@ public class ExamController {
     }
 
     @GetMapping("/{assessmentId}/start")
-    public ResponseEntity<StudentExamDTO> unlockQuestions(@PathVariable Long assessmentId) {
+    public ResponseEntity<?> unlockQuestions(
+            @PathVariable Long assessmentId,
+            Authentication authentication) {
         try {
+            String studentId = authentication.getName();
             // retrievalService returns a single StudentExamDTO object
-            StudentExamDTO data = assessmentService.getQuestionsForStudent(assessmentId);
+            StudentExamDTO data = assessmentService.getQuestionsForStudent(assessmentId, studentId);
 
             // Return the single object directly in the response body
             return ResponseEntity.ok(data);
 
         } catch (RuntimeException e) {
-            // For time-gate or business logic violations
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+            // For time-gate, already attempted, or business logic violations
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error decrypting exam");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error decrypting exam: " + e.getMessage()));
         }
     }
 
