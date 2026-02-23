@@ -66,7 +66,7 @@ public class CodingAssessmentService {
         );
         // Set mode (PRACTICE by default) and minimum marks if provided
         String mode = requestDto.getMode() != null ? requestDto.getMode() : "PRACTICE";
-        assessment.setMode(mode);
+        assessment.setAssessmentMode(mode);
         assessment.setMinMarks(requestDto.getMinMarks());
 
         CodingAssessment savedAssessment = assessmentRepository.save(assessment);
@@ -207,7 +207,7 @@ public class CodingAssessmentService {
 
         // If this coding assessment is configured as an elimination round,
         // reject the student's job application when they don't meet minimum marks.
-        if ("ELIMINATION".equalsIgnoreCase(assessment.getMode())
+        if ("ELIMINATION".equalsIgnoreCase(assessment.getAssessmentMode())
                 && assessment.getJobPost() != null
                 && assessment.getMinMarks() != null
                 && savedResult.getTotalScore() < assessment.getMinMarks()) {

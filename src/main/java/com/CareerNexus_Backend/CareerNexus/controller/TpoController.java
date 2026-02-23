@@ -14,7 +14,7 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/tpo")
+@RequestMapping("/api/tpo")
 public class TpoController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class TpoController {
         return tpoService.getProfileData(authentication.getName());
     }
 
-    @GetMapping("student/get-profile-links/{year}/{department}")
+    @GetMapping("/student/get-profile-links/{year}/{department}")
     public List<StudentDetailsDTO> getProfileLinks(@PathVariable String year, @PathVariable String department){
         return tpoService.getProfileLinks(year,department);
     }

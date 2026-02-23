@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/exam")
+@RequestMapping("/api/exam")
 public class ExamController {
 
     @Autowired
@@ -40,8 +40,9 @@ public class ExamController {
     }
 
     @GetMapping("/student/{job_id}")
-    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(@PathVariable Long job_id){
-        return  assessmentService.getAssessmentConfigurationForJobId(job_id);
+    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(Authentication authentication, @PathVariable Long job_id){
+        String studentId = authentication.getName();
+        return  assessmentService.getAssessmentConfigurationForJobId(job_id, studentId);
     }
 
     // ---------- Recruiter round results ----------

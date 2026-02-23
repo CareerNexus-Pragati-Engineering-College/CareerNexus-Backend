@@ -10,6 +10,8 @@ public class AssessmentRoundDto {
     private LocalDateTime endTime;
     private Long examId;
     private int min_marks;
+    private String examUrl;
+    private String type; // MCQ or CODING
 
 
 
@@ -21,16 +23,14 @@ public class AssessmentRoundDto {
         this.startTime = startTime;
         this.endTime = endTime;
         this.min_marks = min_marks;
-        this.examId=examId;
+        this.examId = examId;
     }
 
-    public AssessmentRoundDto( String roundName,LocalDateTime startTime, LocalDateTime endTime,Long examId) throws Exception {
+    public AssessmentRoundDto( String roundName,LocalDateTime startTime, LocalDateTime endTime,Long examId) {
         this.roundName = roundName;
         this.startTime = startTime;
         this.endTime = endTime;
         this.examId=examId;
-
-
     }
 
 
@@ -92,5 +92,21 @@ public class AssessmentRoundDto {
 
     public void setExamId(Long examId) {
         this.examId = examId;
+    }
+
+    public String getExamUrl() {
+        return examUrl;
+    }
+
+    public void setExamUrl(String examUrl) {
+        this.examUrl = examUrl;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

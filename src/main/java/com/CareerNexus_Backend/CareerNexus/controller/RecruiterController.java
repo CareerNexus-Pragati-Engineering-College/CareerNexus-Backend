@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 
 @RestController
-@RequestMapping("api/recruiter")
+@RequestMapping("/api/recruiter")
 public class RecruiterController {
 
     private static final Logger logger = LoggerFactory.getLogger(RecruiterController.class);

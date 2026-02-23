@@ -60,6 +60,9 @@ public class AssessmentService {
     @Autowired
     private StudentExamAttemptRepository studentExamAttempt;
 
+    @Autowired
+    private CodingAssessmentRepository codingAssessmentRepository;
+
     @org.springframework.beans.factory.annotation.Value("${file.upload-assessment-files}")
     private String uploadAssessmentDir;
 
@@ -143,14 +146,34 @@ public class AssessmentService {
         return assessmentRepository.findAssessmentRoundsByJobId(jobId);
     }
 
-    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(Long jobId) {
-        List<AssessmentRoundDto> rounds =
-                assessmentRepository.findConfigurationByJobId(jobId);
+    public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(Long jobId, String studentId) {
+        // 1. Get MCQs
+        List<AssessmentRoundDto> mcqRounds = assessmentRepository.findConfigurationByJobId(jobId);
+        mcqRounds.forEach(round -> {
+            round.setMin_marks(0);
+            round.setType("MCQ");
+            round.setExamUrl("/student/" + studentId + "/test/" + round.getExamId());
+        });
 
-        // Set min_marks to 0 for each round for student
-        rounds.forEach(round -> round.setMin_marks(0));
+        // 2. Get Coding Assessments
+        List<CodingAssessment> codingRounds = codingAssessmentRepository.findByJobPost_Id(jobId);
+        List<AssessmentRoundDto> convertedCodingRounds = codingRounds.stream().map(ar -> {
+            AssessmentRoundDto dto = new AssessmentRoundDto();
+            dto.setRoundName(ar.getAssessmentName());
+            dto.setStartTime(ar.getStartTime());
+            dto.setEndTime(ar.getEndTime());
+            dto.setExamId(ar.getId());
+            dto.setMin_marks(ar.getMinMarks() != null ? ar.getMinMarks() : 0);
+            dto.setType("CODING");
+            dto.setExamUrl("/student/" + studentId + "/coding-assessment/" + ar.getId());
+            return dto;
+        }).collect(Collectors.toList());
 
-        return rounds;
+        // 3. Merge and Sort by startTime
+        mcqRounds.addAll(convertedCodingRounds);
+        mcqRounds.sort((a, b) -> a.getStartTime().compareTo(b.getStartTime()));
+
+        return mcqRounds;
     }
 
     public StudentExamDTO getQuestionsForStudent(Long assessmentId) throws Exception {

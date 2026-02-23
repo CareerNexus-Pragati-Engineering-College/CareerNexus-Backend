@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CodingAssessmentRepository extends JpaRepository<CodingAssessment, Long> {
     java.util.List<CodingAssessment> findAllByOrderByCreatedAtDesc();
+    java.util.List<CodingAssessment> findByJobPost_Id(Long jobId);
 }
