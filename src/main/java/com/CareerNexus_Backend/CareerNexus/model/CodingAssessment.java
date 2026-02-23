@@ -32,6 +32,14 @@ public class CodingAssessment {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // PRACTICE or ELIMINATION
+    @Column(nullable = false)
+    private String mode = "PRACTICE";
+
+    // Minimum marks required to qualify (for ELIMINATION mode)
+    @Column
+    private Integer minMarks;
+
     public CodingAssessment() {
     }
 
@@ -58,4 +66,20 @@ public class CodingAssessment {
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public Integer getMinMarks() {
+        return minMarks;
+    }
+
+    public void setMinMarks(Integer minMarks) {
+        this.minMarks = minMarks;
+    }
 }

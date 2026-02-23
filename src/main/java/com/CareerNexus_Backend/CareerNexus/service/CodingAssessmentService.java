@@ -41,6 +41,9 @@ public class CodingAssessmentService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
     @Transactional
     public CodingAssessment createCodingAssessment(CodingAssessmentRequestDto requestDto, String tpoId) {
         
@@ -61,6 +64,11 @@ public class CodingAssessmentService {
                 requestDto.getStartTime(),
                 requestDto.getEndTime()
         );
+        // Set mode (PRACTICE by default) and minimum marks if provided
+        String mode = requestDto.getMode() != null ? requestDto.getMode() : "PRACTICE";
+        assessment.setMode(mode);
+        assessment.setMinMarks(requestDto.getMinMarks());
+
         CodingAssessment savedAssessment = assessmentRepository.save(assessment);
 
         // 2. Loop and map Questions
@@ -95,7 +103,7 @@ public class CodingAssessmentService {
     }
 
     @Transactional(readOnly = true)
-    public StudentCodingAssessmentDto getStudentCodingAssessment(Long assessmentId) {
+    public StudentCodingAssessmentDto getStudentCodingAssessment(Long assessmentId, String studentId) {
         CodingAssessment assessment = assessmentRepository.findById(assessmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Coding Assessment not found."));
 
@@ -121,13 +129,25 @@ public class CodingAssessmentService {
             );
         }).collect(Collectors.toList());
 
+        // Check if student already has a result for this assessment (practice history)
+        CodingAssessmentResult result = resultRepository
+                .findByStudent_UserIdAndAssessment_Id(studentId, assessmentId)
+                .orElse(null);
+
+        Boolean solved = result != null;
+        Integer totalScore = result != null ? result.getTotalScore() : null;
+        Integer maxScore = result != null ? result.getMaxScore() : null;
+
         return new StudentCodingAssessmentDto(
                 assessment.getId(),
                 assessment.getAssessmentName(),
                 assessment.getJobPost() != null ? assessment.getJobPost().getId() : null,
                 assessment.getStartTime().toString(),
                 assessment.getEndTime().toString(),
-                questionDtos
+                questionDtos,
+                solved,
+                totalScore,
+                maxScore
         );
     }
 
@@ -183,7 +203,29 @@ public class CodingAssessmentService {
         result.setSubmissionData(submissionDataJson);
         result.setSubmittedAt(LocalDateTime.now());
 
-        return resultRepository.save(result);
+        CodingAssessmentResult savedResult = resultRepository.save(result);
+
+        // If this coding assessment is configured as an elimination round,
+        // reject the student's job application when they don't meet minimum marks.
+        if ("ELIMINATION".equalsIgnoreCase(assessment.getMode())
+                && assessment.getJobPost() != null
+                && assessment.getMinMarks() != null
+                && savedResult.getTotalScore() < assessment.getMinMarks()) {
+
+            Application application = applicationRepository
+                    .findByJobPost_IdAndStudent_UserId(
+                            assessment.getJobPost().getId(),
+                            studentId
+                    ).orElse(null);
+
+            if (application != null) {
+                application.setStatus("REJECTED");
+                application.setFeedback("Did not meet minimum marks in Coding Round");
+                applicationRepository.save(application);
+            }
+        }
+
+        return savedResult;
     }
 
     @Transactional(readOnly = true)

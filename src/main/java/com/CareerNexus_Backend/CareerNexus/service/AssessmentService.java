@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,27 +107,31 @@ public class AssessmentService {
         String answersOnlyJson = objectMapper.writeValueAsString(answersData);
 
 
-        String encryptionKey=encryptionService.generateKey();
+        String encryptionKey = encryptionService.generateKey();
 
         AssessmentRound assessmentRound = new AssessmentRound(
                 user,
                 jobPost,
                 assessmentRoundDto.getRoundName(),
                 assessmentRoundDto.getMin_marks(),
-                encryptionService.encrypt(questionsOnlyJson,encryptionKey),
-                encryptionService.encrypt(answersOnlyJson,encryptionKey),
+                encryptionService.encrypt(questionsOnlyJson, encryptionKey),
+                encryptionService.encrypt(answersOnlyJson, encryptionKey),
                 encryptionKey,
                 assessmentRoundDto.getStartTime(),
                 assessmentRoundDto.getEndTime(),
                 LocalDateTime.now()
         );
+
+        // Persist the assessment round first so that it has a valid ID for email links.
+        AssessmentRound savedAssessmentRound = assessmentRepository.save(assessmentRound);
+
         assessmentNotificationService.notifyRegisteredStudents(
                 jobPost.getId(),
                 jobPost.getJobTitle(),
                 assessmentRoundDto.getRoundName(),
                 assessmentRoundDto.getStartTime().toString(),
                 assessmentRoundDto.getEndTime().toString(),
-                assessmentRound.getId() // pass the newly created assessment ID
+                savedAssessmentRound.getId()
         );
 
         return ResponseEntity.ok("Round Configured Successfully...");
@@ -273,5 +279,95 @@ public class AssessmentService {
         }
 
         return savedAttempt;
+    }
+
+    /**
+     * Helper for building DTOs for recruiter round views.
+     */
+    private AssessmentRoundStudentStatusDto toStatusDto(AssessmentRound round, StudentExamAttempt attempt, Application application) {
+        return new AssessmentRoundStudentStatusDto(
+                round.getId(),
+                round.getJobPost() != null ? round.getJobPost().getId() : null,
+                attempt.getStudent().getUserId(),
+                attempt.getStudent().getEmail(),
+                application != null ? application.getId() : null,
+                application != null ? application.getStatus() : null,
+                application != null ? application.getApplicationDate() : null,
+                attempt.getScore(),
+                attempt.getTotalQuestions(),
+                attempt.getResultStatus()
+        );
+    }
+
+    public List<AssessmentRoundStudentStatusDto> getPassedStudentsForRound(Long assessmentRoundId) {
+        AssessmentRound round = assessmentRepository.findById(assessmentRoundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment Round not found with ID: " + assessmentRoundId));
+
+        List<StudentExamAttempt> attempts = studentExamAttempt.findByAssessmentRound_IdAndResultStatus(assessmentRoundId, "PASSED");
+
+        return attempts.stream()
+                .map(attempt -> {
+                    Application app = applicationRepository
+                            .findByJobPost_IdAndStudent_UserId(
+                                    round.getJobPost().getId(),
+                                    attempt.getStudent().getUserId()
+                            ).orElse(null);
+                    return toStatusDto(round, attempt, app);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<AssessmentRoundStudentStatusDto> getFailedStudentsForRound(Long assessmentRoundId) {
+        AssessmentRound round = assessmentRepository.findById(assessmentRoundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment Round not found with ID: " + assessmentRoundId));
+
+        List<StudentExamAttempt> attempts = studentExamAttempt.findByAssessmentRound_IdAndResultStatus(assessmentRoundId, "FAILED");
+
+        return attempts.stream()
+                .map(attempt -> {
+                    Application app = applicationRepository
+                            .findByJobPost_IdAndStudent_UserId(
+                                    round.getJobPost().getId(),
+                                    attempt.getStudent().getUserId()
+                            ).orElse(null);
+                    return toStatusDto(round, attempt, app);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Pending = applied for the job but has not submitted this assessment round yet.
+     */
+    public List<AssessmentRoundStudentStatusDto> getPendingStudentsForRound(Long assessmentRoundId) {
+        AssessmentRound round = assessmentRepository.findById(assessmentRoundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assessment Round not found with ID: " + assessmentRoundId));
+
+        Long jobId = round.getJobPost().getId();
+
+        // All applications for this job
+        List<Application> applications = applicationRepository.findByJobPost_Id(jobId);
+
+        // All attempts for this round
+        List<StudentExamAttempt> attempts = studentExamAttempt.findByAssessmentRound_Id(assessmentRoundId);
+        Set<String> attemptedStudentIds = attempts.stream()
+                .map(a -> a.getStudent().getUserId())
+                .collect(Collectors.toSet());
+
+        // Filter applications where student has not attempted this round
+        return applications.stream()
+                .filter(app -> !attemptedStudentIds.contains(app.getStudent().getUserId()))
+                .map(app -> new AssessmentRoundStudentStatusDto(
+                        round.getId(),
+                        jobId,
+                        app.getStudent().getUserId(),
+                        app.getStudent().getEmail(),
+                        app.getId(),
+                        app.getStatus(),
+                        app.getApplicationDate(),
+                        null,
+                        null,
+                        "PENDING"
+                ))
+                .collect(Collectors.toList());
     }
 }
