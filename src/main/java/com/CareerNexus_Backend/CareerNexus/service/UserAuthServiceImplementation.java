@@ -1,7 +1,9 @@
 package com.CareerNexus_Backend.CareerNexus.service;
 
+// import com.CareerNexus_Backend.CareerNexus.dto.ChangePasswordDTO;
 import com.CareerNexus_Backend.CareerNexus.dto.UsersDTO;
 import com.CareerNexus_Backend.CareerNexus.exceptions.DuplicateUserException;
+// import com.CareerNexus_Backend.CareerNexus.exceptions.ResourceNotFoundException;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import com.CareerNexus_Backend.CareerNexus.security.JwtUtils;
@@ -50,22 +52,17 @@ public class UserAuthServiceImplementation implements UserAuthService {
         this.userAuthRepository = userAuthRepository;
     }
 
+    // ── Register ──────────────────────────────────────────────────────────────
+
     public User registerUser(User user) {
-        // checks whether the student already or not if yes it send a exception to the
-        // user signup page
         Optional<User> existingStudent = userAuthRepository.findByUserId(user.getUserId());
         if (existingStudent.isPresent()) {
-            // Throw the custom exception to signal the conflict
             throw new DuplicateUserException(HttpStatus.CONFLICT.value(),
                     "User with userId '" + user.getUserId() + "' already exists.");
         }
         try {
-            // This line the raw password is encrypted using cryptographic techniques
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-            // User Signup details stored in db
             return userAuthRepository.save(user);
-
         } catch (Exception e) {
             // Log the exception for debugging
             logger.error("Error inserting user: {}", e.getMessage(), e);
@@ -73,7 +70,9 @@ public class UserAuthServiceImplementation implements UserAuthService {
         }
     }
 
-    @Transactional()
+    // ── Login ─────────────────────────────────────────────────────────────────
+
+    @Transactional
     public ResponseEntity<Map<String, String>> login(UsersDTO user) {
         try {
             logger.info("Authenticating user: {}", user.getUserId());
@@ -105,6 +104,7 @@ public class UserAuthServiceImplementation implements UserAuthService {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
                 }
             }
+                      
 
             // Generate JWT token
             String token = jwtUtils.getToken(user.getUserId(), authenticatedRole);
@@ -148,6 +148,7 @@ public class UserAuthServiceImplementation implements UserAuthService {
             responseBody.put("msg", "redirecting to Home...");
             responseBody.put("router", "/home");
             return ResponseEntity.status(200).body(responseBody);
+
         } catch (Exception e) {
             logger.error("Authentication failed for user: {}. Error: {}", user.getUserId(), e.getMessage());
             Map<String, String> errorBody = new HashMap<>();
@@ -155,9 +156,58 @@ public class UserAuthServiceImplementation implements UserAuthService {
             errorBody.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(errorBody);
-
         }
-
     }
 
+//    // ── Change Password ───────────────────────────────────────────────────────
+//
+//    @Transactional
+//    public ResponseEntity<Map<String, String>> changePassword(
+//            String userId, ChangePasswordDTO request) {
+//
+//        // Step 1 — Find the user
+//        User user = userAuthRepository.findByUserId(userId)
+//                .orElseThrow(() -> new ResourceNotFoundException(
+//                        "User not found with ID: " + userId));
+//
+//        // Step 2 — Verify current password is correct
+//        if (!passwordEncoder.matches(
+//                request.getCurrentPassword(), user.getPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error", "Current password is incorrect"));
+//        }
+//
+//        // Step 3 — New password and confirm password must match
+//        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password and confirm password do not match"));
+//        }
+//
+//        // Step 4 — New password must not be same as current password
+//        if (passwordEncoder.matches(
+//                request.getNewPassword(), user.getPassword())) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password cannot be the same as current password"));
+//        }
+//
+//        // Step 5 — Minimum length check
+//        if (request.getNewPassword().length() < 6) {
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of("error",
+//                            "New password must be at least 6 characters"));
+//        }
+//
+//        // Step 6 — Encode and save
+//        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+//        userAuthRepository.save(user);
+//
+//        return ResponseEntity.ok(Map.of(
+//                "message", "Password changed successfully"));
+//    }
 }

@@ -17,6 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
+import com.CareerNexus_Backend.CareerNexus.dto.ChangePasswordDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Map;
 
 @Service
 public class StudentServices {
@@ -28,6 +33,9 @@ public class StudentServices {
 
     @Autowired
     private UserAuthRepository userAuthRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private SupabaseStorageService supabaseStorageService;
@@ -149,5 +157,59 @@ public class StudentServices {
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for User ID: " + userId));
 
         return new UserDTO(studentDetails);
+    }
+
+    // ── Change Password ───────────────────────────────────────────────────────
+
+    @Transactional
+    public ResponseEntity<Map<String, String>> changePassword(
+            String userId, ChangePasswordDTO request) {
+
+        // Step 1 — Find the user in users table
+        User user = userAuthRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with ID: " + userId));
+
+        // Step 2 — Verify current password is correct
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(), user.getPassword())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Current password is incorrect"));
+        }
+
+        // Step 3 — New password and confirm password must match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error",
+                            "New password and confirm password do not match"));
+        }
+
+        // Step 4 — New password must not be same as current password
+        if (passwordEncoder.matches(
+                request.getNewPassword(), user.getPassword())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error",
+                            "New password cannot be the same as current password"));
+        }
+
+        // Step 5 — Minimum length check
+        if (request.getNewPassword().length() < 6) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error",
+                            "New password must be at least 6 characters"));
+        }
+
+        // Step 6 — Encode and save new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userAuthRepository.save(user);
+
+        logger.info("Password changed successfully for userId: {}", userId);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Password changed successfully"));
     }
 }
