@@ -19,7 +19,6 @@ public class JobPostDTO {
     private String name;
     private String userId;
 
-    private RecruiterDetailsDTO recruiterDetailsDTO;
 
 
     public JobPostDTO() {}
@@ -134,11 +133,6 @@ public class JobPostDTO {
         this.postedAt = postedAt;
     }
 
-    public void setRecruiterDetails(RecruiterDetailsDTO recruiterDetailsDTO) {
-        this.recruiterDetailsDTO=recruiterDetailsDTO;
-
-    }
-
     public String getName() {
         return name;
     }
@@ -154,13 +148,4 @@ public class JobPostDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-
-    public RecruiterDetailsDTO getRecruiterDetailsDTO() {
-        return recruiterDetailsDTO;
-    }
-
-    public void setRecruiterDetailsDTO(RecruiterDetailsDTO recruiterDetailsDTO) {
-        this.recruiterDetailsDTO = recruiterDetailsDTO;
-    }
-
 }

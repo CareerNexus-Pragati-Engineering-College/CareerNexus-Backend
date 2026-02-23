@@ -53,6 +53,14 @@ public class JobPostController {
     }
 
 
+    @GetMapping("/latest")
+    public ResponseEntity<List<JobPostDTO>> getLatestJobs(Authentication authentication) {
+        String userId = authentication.getName();
+        List<JobPostDTO> jobs = jobPostService.getLatestJobs(userId);
+        return ResponseEntity.ok(jobs);
+    }
+
+
     @PutMapping("/{jobId}")
     public ResponseEntity<JobPostDTO> updateJob(
             @PathVariable Long jobId,

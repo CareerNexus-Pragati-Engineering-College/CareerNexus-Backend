@@ -6,11 +6,12 @@ import com.CareerNexus_Backend.CareerNexus.model.JobPost;
 import com.CareerNexus_Backend.CareerNexus.model.Recruiter;
 import com.CareerNexus_Backend.CareerNexus.model.User;
 import com.CareerNexus_Backend.CareerNexus.repository.JobPostRepository;
-import com.CareerNexus_Backend.CareerNexus.repository.RecruiterRepository;
+
 import com.CareerNexus_Backend.CareerNexus.repository.UserAuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,8 +25,7 @@ public class JobPostService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    @Autowired
-    private RecruiterRepository recruiterRepository;
+
 
 
     @Transactional
@@ -60,6 +60,16 @@ public class JobPostService {
         User user = userAuthRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         List<JobPost> jobs = jobPostRepository.findNotAppliedJobsByStudent(user);
+        return jobs.stream()
+                .map(this::convertEntityToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<JobPostDTO> getLatestJobs(String userId) {
+        User user = userAuthRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        List<JobPost> jobs = jobPostRepository.findTop5LatestNotAppliedJobs(user, PageRequest.of(0, 5));
         return jobs.stream()
                 .map(this::convertEntityToDto)
                 .collect(Collectors.toList());
@@ -112,9 +122,6 @@ public class JobPostService {
     }
 
     private JobPostDTO convertEntityToDto(JobPost entity) {
-
-        String userId=entity.getPostedBy().getUserId();
-        Optional<Recruiter> recruiterDetails= recruiterRepository.findByUserId(userId);
         JobPostDTO dto = new JobPostDTO();
         dto.setId(entity.getId());
         dto.setCompanyName(entity.getCompanyName());
@@ -125,7 +132,6 @@ public class JobPostService {
         dto.setJobDescription(entity.getJobDescription());
         dto.setRecruitmentProcess(entity.getRecruitmentProcess());
         dto.setPostedAt(entity.getPostedAt());
-        dto.setRecruiterDetails(new RecruiterDetailsDTO(recruiterDetails.get()));
         return dto;
     }
 
