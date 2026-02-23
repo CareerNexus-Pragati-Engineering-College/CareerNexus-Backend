@@ -19,6 +19,11 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
             "WHERE app.id IS NULL")
     List<JobPost> findNotAppliedJobsByStudent(@Param("student") User student);
 
+    @Query("SELECT jp FROM JobPost jp " +
+            "LEFT JOIN Application app ON app.jobPost = jp AND app.student = :student " +
+            "WHERE app.id IS NULL ORDER BY jp.postedAt DESC")
+    List<JobPost> findTop5LatestNotAppliedJobs(@Param("student") User student, org.springframework.data.domain.Pageable pageable);
+
 
     @Query("SELECT NEW com.CareerNexus_Backend.CareerNexus.dto.JobPostDTO(" +
             "jp.id, jp.applicationDeadline, jp.companyName, jp.jobTitle, " +
@@ -28,7 +33,4 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
             "JOIN Recruiter rd ON rd.userId = poster.userId " +
             "ORDER BY poster.userId")
     List<JobPostDTO> findAllJobs();
-
-
-
 }
