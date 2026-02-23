@@ -34,12 +34,11 @@ public class RecruiterService {
     @Autowired
     private SupabaseStorageService supabaseStorageService;
 
-    public boolean isRecruiterAvailable(UsersDTO user){
-        Optional<Recruiter> isData=recruiterDetailsRepository.findByUserId(user.getUserId());
-        if(isData.isEmpty()){
-            return true;
-        }
-        return false;
+    /**
+     * Checks if a recruiter profile exists for the given user.
+     */
+    public boolean isProfileMissing(UsersDTO user) {
+        return recruiterDetailsRepository.findByUserId(user.getUserId()).isEmpty();
     }
     @Transactional
     public RecruiterDetailsDTO createOrUpdateProfile(String userId, RecruiterDetailsDTO recruiterDetailsDTO, MultipartFile img) throws IOException {

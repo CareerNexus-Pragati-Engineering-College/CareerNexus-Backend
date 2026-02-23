@@ -53,54 +53,41 @@ public class UserAuthController {
         }
     }
 
-    // ── TPO Register ──────────────────────────────────────────────────────────
-
-    @PostMapping("/tpo/register")
-    public ResponseEntity<?> tpoRegistration(@RequestBody User tpo) {
-        logger.info("Received TPO registration request for username: {}",
-                tpo.getUserId());
-        try {
-            tpo.setRole("tpo");
-            User registeredTpo = userAuthService.registerUser(tpo);
-            logger.info("TPO registered successfully: {}", registeredTpo.getUserId());
-            return new ResponseEntity<>(registeredTpo, HttpStatus.CREATED);
-        } catch (DuplicateUserException e) {
-            return new ResponseEntity<>(
-                    new DuplicateUserException(HttpStatus.CONFLICT.value(),
-                            "User with this userId already exists."),
-                    HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new DuplicateUserException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "An unexpected error occurred during registration."),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    // ── Recruiter Register ────────────────────────────────────────────────────
-
-    @PostMapping("/recruiter/register")
-    public ResponseEntity<?> recruiterRegistration(@RequestBody User recruiter) {
-        logger.info("Received Recruiter registration request for username: {}",
-                recruiter.getUserId());
-        try {
-            recruiter.setRole("recruiter");
-            User registeredRecruiter = userAuthService.registerUser(recruiter);
-            logger.info("Recruiter registered successfully: {}",
-                    registeredRecruiter.getUserId());
-            return new ResponseEntity<>(registeredRecruiter, HttpStatus.CREATED);
-        } catch (DuplicateUserException e) {
-            return new ResponseEntity<>(
-                    new DuplicateUserException(HttpStatus.CONFLICT.value(),
-                            "User with this userId already exists."),
-                    HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new DuplicateUserException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "An unexpected error occurred during registration."),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    // this method mainly focus on tpo signup details to store in db
+//    @PostMapping("/tpo/register")
+//    public ResponseEntity<?> tpoRegistration(@RequestBody User tpo) {
+//        logger.info("Received TPO registration request for username: {}", tpo.getUserId());
+//        try {
+//            tpo.setRole("tpo");
+//            User registeredTpo = userAuthService.registerUser(tpo);
+//            logger.info("TPO registered successfully: {}", registeredTpo.getUserId());
+//            return new ResponseEntity<>(registeredTpo, HttpStatus.CREATED);
+//        } catch (DuplicateUserException e) {
+//
+//            return new ResponseEntity<>(new DuplicateUserException(HttpStatus.CONFLICT.value(), "User with this userId already exists."), HttpStatus.CONFLICT);
+//        } catch (Exception e) {
+//
+//            return new ResponseEntity<>(new DuplicateUserException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred during registration."), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+//
+//    // this method mainly focus on Recruiter signup details to store in db
+//    @PostMapping("/recruiter/register")
+//    public ResponseEntity<?> recruiterRegistration(@RequestBody User recruiter) {
+//        logger.info("Received Recruiter registration request for username: {}", recruiter.getUserId());
+//        try {
+//            recruiter.setRole("recruiter"); // Fixed typo
+//            User registeredRecruiter = userAuthService.registerUser(recruiter);
+//            logger.info("Recruiter registered successfully: {}", registeredRecruiter.getUserId());
+//            return new ResponseEntity<>(registeredRecruiter, HttpStatus.CREATED);
+//        } catch (DuplicateUserException e) {
+//
+//            return new ResponseEntity<>(new DuplicateUserException(HttpStatus.CONFLICT.value(), "User with this userId already exists."), HttpStatus.CONFLICT);
+//        } catch (Exception e) {
+//
+//            return new ResponseEntity<>(new DuplicateUserException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred during registration."), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     // ── Login ─────────────────────────────────────────────────────────────────
 

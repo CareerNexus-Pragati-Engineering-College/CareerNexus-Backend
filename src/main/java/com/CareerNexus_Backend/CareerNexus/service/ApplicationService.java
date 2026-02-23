@@ -61,7 +61,9 @@ public class ApplicationService {
                 .orElseThrow(() -> new Exception("Student User not found with ID: " + studentUserId));
 
 
-        if (!"Student".equalsIgnoreCase(student.getRole())) {
+        if (!"student".equalsIgnoreCase(student.getRole())) {
+            logger.warn("Non-student user {} (Role: {}) attempted to apply for job {}", 
+                    studentUserId, student.getRole(), jobId);
             throw new IllegalArgumentException("Only users with 'STUDENT' role can apply for jobs.");
         }
 
@@ -99,7 +101,7 @@ public class ApplicationService {
                     jobPost.getLocations()
             );
         } catch (Exception e) {
-            logger.error("Failed to send application confirmation email to {}", student.getEmail(), e);
+            logger.error("Failed to send application confirmation email to {}. Error: {}", student.getEmail(), e.getMessage());
             // Non-blocking error
         }
 

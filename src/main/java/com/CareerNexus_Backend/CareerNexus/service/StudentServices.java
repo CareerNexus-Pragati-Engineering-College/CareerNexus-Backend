@@ -40,9 +40,13 @@ public class StudentServices {
     @Autowired
     private SupabaseStorageService supabaseStorageService;
 
-    public boolean isStudentAvailable(UsersDTO user) {
-        Optional<Student> isData = studentRepository.findByUserId(user.getUserId());
-        return isData.isEmpty();
+    /**
+     * Checks if a student profile exists for the given user.
+     * Note: Returns false if profile DOES exist (matching previous isStudentAvailable logic).
+     * Refactored for better naming.
+     */
+    public boolean isProfileMissing(UsersDTO user) {
+        return studentRepository.findByUserId(user.getUserId()).isEmpty();
     }
 
     @Transactional

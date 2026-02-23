@@ -25,12 +25,11 @@ public class TpoService {
     @Autowired
     private UserAuthRepository userRepository; // To fetch the User entity to link with
 
-    public boolean isTpoAvailable(UsersDTO user) {
-        Optional<TPO> isData = tpoRepository.findByUserId(user.getUserId());
-        if (isData.isEmpty()) {
-            return true;
-        }
-        return false;
+    /**
+     * Checks if a TPO profile exists for the given user.
+     */
+    public boolean isProfileMissing(UsersDTO user) {
+        return tpoRepository.findByUserId(user.getUserId()).isEmpty();
     }
 
     @Autowired

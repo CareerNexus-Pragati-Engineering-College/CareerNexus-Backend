@@ -6,6 +6,8 @@ public class UsersDTO {
     private String password;
     private String role;
 
+
+
     public String getUserId() {
         return userId;
     }

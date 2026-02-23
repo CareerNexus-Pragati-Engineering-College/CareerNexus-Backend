@@ -123,4 +123,83 @@ public class EmailService {
             System.err.println("Application Confirmation Email dispatch failed for: " + toEmail + " Error: " + e.getMessage());
         }
     }
+
+    /**
+     * Sends a festive and informative welcome email to newly created users.
+     */
+    public void sendWelcomeEmail(String toEmail, String userId, String rawPassword, String role) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(new InternetAddress(senderEmail, senderName));
+            helper.setTo(toEmail);
+            helper.setSubject("Welcome to Career Nexus - Your Account is Ready!");
+
+            String roleSpecificText = switch (role.toLowerCase()) {
+                case "student" -> "your gateway to career growth, skill assessments, and top job opportunities.";
+                case "recruiter" -> "your platform for finding the best talent and managing your recruitment pipeline efficiently.";
+                case "tpo" -> "your dashboard for coordinating placements, tracking student progress, and bridging ties with industry.";
+                default -> "your comprehensive career development platform.";
+            };
+
+            String loginUrl = frontendUrl + role+"/login";
+
+            String htmlBody = """
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                    <div style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 40px 20px; text-align: center;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Welcome to Career Nexus!</h1>
+                        <p style="margin: 10px 0 0; opacity: 0.9; font-size: 16px;">The search ends here.</p>
+                    </div>
+                    
+                    <div style="padding: 40px 30px; background-color: #ffffff; color: #1e293b;">
+                        <p style="font-size: 18px; line-height: 1.6; margin-bottom: 20px;">Hello!</p>
+                        
+                        <p style="font-size: 16px; line-height: 1.6; color: #475569;">
+                            We are thrilled to have you on board. Your account has been successfully created as a <b>%s</b>. Career Nexus is %s
+                        </p>
+                        
+                        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 12px; margin: 30px 0;">
+                            <h3 style="margin-top: 0; font-size: 14px; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Your Login Credentials</h3>
+                            
+                            <table style="width: 100%%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px 0; color: #64748b; font-size: 14px; width: 100px;">Username:</td>
+                                    <td style="padding: 8px 0; color: #1e293b; font-weight: 700;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email:</td>
+                                    <td style="padding: 8px 0; color: #1e293b; font-weight: 700;">%s</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Password:</td>
+                                    <td style="padding: 8px 0; color: #4f46e5; font-family: monospace; font-size: 18px; font-weight: 900; letter-spacing: 1px;">%s</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="%s" style="background-color: #4f46e5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">Login to Dashboard</a>
+                        </div>
+                        
+                        <p style="font-size: 14px; line-height: 1.6; color: #94a3b8; text-align: center;">
+                            For security purposes, we recommend that you change your password after your first login.
+                        </p>
+                        
+                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #f1f5f9; text-align: center;">
+                            <p style="margin: 0; color: #475569; font-weight: 600;">The Career Nexus Team</p>
+                            <p style="margin: 5px 0 0; color: #94a3b8; font-size: 12px;">Bridging Professionals & Opportunities</p>
+                        </div>
+                    </div>
+                </div>
+                """.formatted(role.substring(0,1).toUpperCase()+role.substring(1), roleSpecificText, userId, toEmail, rawPassword, loginUrl);
+
+            helper.setText(htmlBody, true);
+            mailSender.send(message);
+            System.out.println("Dispatched Welcome Email to: " + toEmail + " with credentials.");
+        } catch (Exception e) {
+            System.err.println("Welcome Email dispatch failed for: " + toEmail + " Error: " + e.getMessage());
+        }
+    }
 }
