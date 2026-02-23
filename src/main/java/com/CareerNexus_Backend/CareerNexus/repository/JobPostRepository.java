@@ -21,7 +21,7 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
 
     @Query("SELECT jp FROM JobPost jp " +
             "LEFT JOIN Application app ON app.jobPost = jp AND app.student = :student " +
-            "WHERE app.id IS NULL ORDER BY jp.postedAt DESC")
+            "WHERE app.id IS NULL ORDER BY jp.id DESC")
     List<JobPost> findTop5LatestNotAppliedJobs(@Param("student") User student, org.springframework.data.domain.Pageable pageable);
 
 
