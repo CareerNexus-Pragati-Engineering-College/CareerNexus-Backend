@@ -262,7 +262,7 @@ public class AssessmentService {
         if (!isPassed) {
             Application application =applicationRepository .findByJobPost_IdAndStudent_UserId(
                     assessment.getJobPost().getId(),
-                    student
+                    studentUserId
             ).orElse(null);
 
             if (application != null) {
