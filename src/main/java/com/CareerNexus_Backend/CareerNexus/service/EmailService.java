@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +27,7 @@ public class EmailService {
     /**
      * Sends a professional HTML invitation for the exam slot.
      */
+    @Async
     public void sendExamInvite(String toEmail, String studentId, String studentName, String jobTitle, String roundName, String slotStart, String slotEnd, Long assessmentId) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -70,6 +72,7 @@ public class EmailService {
     /**
      * Sends a professional HTML confirmation receipt when a student applies for a job.
      */
+    @Async
     public void sendApplicationConfirmationEmail(String toEmail, String studentName, String companyName, String jobTitle, String location) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -80,7 +83,7 @@ public class EmailService {
             helper.setSubject("Application Received: " + jobTitle + " at " + companyName);
 
             // Dynamic frontend link based on environment
-            String applicationsLink = frontendUrl + "/student/applications";
+            String applicationsLink = frontendUrl + "/student/" + studentName + "/applications";
 
             String htmlBody = """
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -127,6 +130,7 @@ public class EmailService {
     /**
      * Sends a festive and informative welcome email to newly created users.
      */
+    @Async
     public void sendWelcomeEmail(String toEmail, String userId, String rawPassword, String role) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

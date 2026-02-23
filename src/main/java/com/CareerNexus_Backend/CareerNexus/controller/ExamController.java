@@ -2,9 +2,9 @@ package com.CareerNexus_Backend.CareerNexus.controller;
 
 
 import com.CareerNexus_Backend.CareerNexus.dto.AssessmentRoundDto;
+import com.CareerNexus_Backend.CareerNexus.dto.AssessmentRoundStudentStatusDto;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentAnswerSubmissionDto;
 import com.CareerNexus_Backend.CareerNexus.dto.StudentExamDTO;
-import com.CareerNexus_Backend.CareerNexus.model.AssessmentRound;
 import com.CareerNexus_Backend.CareerNexus.model.StudentExamAttempt;
 import com.CareerNexus_Backend.CareerNexus.service.AssessmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,23 @@ public class ExamController {
     @GetMapping("/student/{job_id}")
     public List<AssessmentRoundDto> getAssessmentConfigurationForJobId(@PathVariable Long job_id){
         return  assessmentService.getAssessmentConfigurationForJobId(job_id);
+    }
+
+    // ---------- Recruiter round results ----------
+
+    @GetMapping("/recruiter/round/{assessmentId}/students/passed")
+    public List<AssessmentRoundStudentStatusDto> getPassedStudentsForRound(@PathVariable Long assessmentId) {
+        return assessmentService.getPassedStudentsForRound(assessmentId);
+    }
+
+    @GetMapping("/recruiter/round/{assessmentId}/students/failed")
+    public List<AssessmentRoundStudentStatusDto> getFailedStudentsForRound(@PathVariable Long assessmentId) {
+        return assessmentService.getFailedStudentsForRound(assessmentId);
+    }
+
+    @GetMapping("/recruiter/round/{assessmentId}/students/pending")
+    public List<AssessmentRoundStudentStatusDto> getPendingStudentsForRound(@PathVariable Long assessmentId) {
+        return assessmentService.getPendingStudentsForRound(assessmentId);
     }
 
     @GetMapping("/{assessmentId}/start")

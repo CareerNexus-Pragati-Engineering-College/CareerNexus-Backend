@@ -48,9 +48,10 @@ public class CodingAssessmentController {
     }
 
     @GetMapping("/{id}/start")
-    public ResponseEntity<?> startAssessment(@PathVariable Long id) {
+    public ResponseEntity<?> startAssessment(@PathVariable Long id, Authentication authentication) {
         try {
-            StudentCodingAssessmentDto dto = codingAssessmentService.getStudentCodingAssessment(id);
+            String studentId = authentication.getName();
+            StudentCodingAssessmentDto dto = codingAssessmentService.getStudentCodingAssessment(id, studentId);
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching assessment: " + e.getMessage());

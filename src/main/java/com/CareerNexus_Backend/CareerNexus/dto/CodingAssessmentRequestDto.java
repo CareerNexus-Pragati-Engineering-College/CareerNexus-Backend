@@ -9,6 +9,8 @@ public class CodingAssessmentRequestDto {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private List<CodingQuestionDto> questions;
+    private Integer minMarks; // for elimination rounds
+    private String mode;      // PRACTICE or ELIMINATION
 
     public CodingAssessmentRequestDto() {}
 
@@ -22,4 +24,20 @@ public class CodingAssessmentRequestDto {
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     public List<CodingQuestionDto> getQuestions() { return questions; }
     public void setQuestions(List<CodingQuestionDto> questions) { this.questions = questions; }
+
+    public Integer getMinMarks() {
+        return minMarks;
+    }
+
+    public void setMinMarks(Integer minMarks) {
+        this.minMarks = minMarks;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
 }
